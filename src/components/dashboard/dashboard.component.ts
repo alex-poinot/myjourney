@@ -241,7 +241,7 @@ interface MissionData {
 
     .dashboard-header h1 {
       margin: 0 0 8px 0;
-      color: #1e293b;
+      color: #226D68;
       font-size: 28px;
       font-weight: 700;
     }
@@ -251,8 +251,8 @@ interface MissionData {
       color: #64748b;
       font-size: 16px;
     }
-
-    .table-container {
+      background: rgba(100, 206, 199, 0.2);
+      color: #226D68;
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -266,29 +266,30 @@ interface MissionData {
     }
 
     .column-group-header {
-      background: #1e293b;
+      background: #226D68;
       color: white;
       padding: 12px 16px;
       font-weight: 600;
       text-align: center;
-      border-bottom: 2px solid #334155;
+      border-bottom: 2px solid #64CEC7;
       position: relative;
     }
 
     .column-group-header.information {
-      background: #0f172a;
+      background: #1a5a56;
     }
 
     .column-group-header.avant-mission {
-      background: #1e40af;
+      background: #226D68;
     }
 
     .column-group-header.pendant-mission {
-      background: #059669;
+      background: #64CEC7;
+      color: #226D68;
     }
 
     .column-group-header.fin-mission {
-      background: #dc2626;
+      background: #226D68;
     }
 
     .column-header {
@@ -302,8 +303,8 @@ interface MissionData {
     }
 
     .column-header.percentage {
-      background: #fef3c7;
-      color: #92400e;
+      background: rgba(100, 206, 199, 0.2);
+      color: #226D68;
       min-width: 60px;
     }
 
@@ -320,7 +321,7 @@ interface MissionData {
     .group-cell {
       padding: 12px 16px;
       font-weight: 600;
-      color: #1e293b;
+      color: #226D68;
       display: flex;
       align-items: center;
       gap: 8px;

@@ -64,9 +64,10 @@ export interface TabGroup {
       left: 0;
       right: 0;
       height: 70px;
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      color: white;
+      background: white;
+      color: #226D68;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border-bottom: 2px solid #64CEC7;
       z-index: 100;
       display: flex;
       align-items: center;
@@ -85,12 +86,12 @@ export interface TabGroup {
     }
 
     .navbar-brand:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(100, 206, 199, 0.1);
     }
 
     .logo {
       font-size: 28px;
-      background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+      background: linear-gradient(45deg, #226D68, #64CEC7);
       border-radius: 8px;
       padding: 6px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -101,7 +102,7 @@ export interface TabGroup {
       font-size: 20px;
       font-weight: 700;
       margin: 0;
-      background: linear-gradient(45deg, #60a5fa, #a78bfa);
+      background: linear-gradient(45deg, #226D68, #64CEC7);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -130,12 +131,12 @@ export interface TabGroup {
     }
 
     .group-button:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(100, 206, 199, 0.1);
     }
 
     .group-button.active {
-      background: rgba(59, 130, 246, 0.3);
-      border: 1px solid rgba(59, 130, 246, 0.5);
+      background: rgba(100, 206, 199, 0.2);
+      border: 1px solid #64CEC7;
     }
 
     .icon {
@@ -149,7 +150,7 @@ export interface TabGroup {
 
     .expand-icon {
       font-size: 10px;
-      color: #cbd5e1;
+      color: #64CEC7;
       transition: transform 0.2s ease;
     }
 
@@ -158,8 +159,8 @@ export interface TabGroup {
       top: 100%;
       left: 0;
       min-width: 200px;
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: white;
+      border: 1px solid #64CEC7;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       opacity: 0;
@@ -186,11 +187,12 @@ export interface TabGroup {
     }
 
     .dropdown-item:hover {
-      background: rgba(255,255,255,0.15);
+      background: rgba(100, 206, 199, 0.1);
     }
 
     .dropdown-item.active {
-      background: #3b82f6;
+      background: #226D68;
+      color: white;
       font-weight: 600;
     }
 
@@ -204,20 +206,20 @@ export interface TabGroup {
     }
 
     .navbar-profile:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(100, 206, 199, 0.1);
     }
 
     .profile-photo {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.2);
+      border: 2px solid #64CEC7;
       object-fit: cover;
     }
 
     .profile-name {
       font-weight: 500;
-      color: #f1f5f9;
+      color: #226D68;
       font-size: 14px;
     }
 
