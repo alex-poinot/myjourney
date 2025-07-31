@@ -680,6 +680,13 @@ export class DashboardComponent implements OnInit {
 
   toggleMainGroup(index: number): void {
     this.groupedData[index].expanded = !this.groupedData[index].expanded;
+    
+    // Si on ferme le groupe, fermer aussi tous les sous-groupes (clients)
+    if (!this.groupedData[index].expanded) {
+      this.groupedData[index].clients.forEach(client => {
+        client.expanded = false;
+      });
+    }
   }
 
   toggleClientGroup(groupIndex: number, clientIndex: number): void {
