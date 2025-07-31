@@ -171,18 +171,18 @@ import { PreviewComponent } from '../preview/preview.component';
     .nog-container {
       display: flex;
       min-height: calc(100vh - 80px);
-      background: #f1f5f9;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--gray-50);
+      font-family: 'Inter', system-ui, sans-serif;
     }
 
     /* Sidebar */
     .sidebar {
       width: 320px;
       background: white;
-      border-right: 1px solid #e2e8f0;
+      border-right: 1px solid var(--gray-200);
       display: flex;
       flex-direction: column;
-      box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-md);
       transition: width 0.3s ease;
       position: relative;
     }
@@ -195,18 +195,18 @@ import { PreviewComponent } from '../preview/preview.component';
       right: -15px;
       width: 30px;
       height: 30px;
-      background: #226D68;
+      background: var(--primary-color);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 10;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-sm);
       transition: all 0.2s;
     }
     .sidebar-toggle:hover {
-      background: #1a5a56;
+      background: var(--primary-dark);
       transform: scale(1.1);
     }
     .toggle-icon {
@@ -216,8 +216,8 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .sidebar-header {
       padding: 24px 20px;
-      border-bottom: 1px solid #e2e8f0;
-      background: linear-gradient(135deg, #226D68 0%, #64CEC7 100%);
+      border-bottom: 1px solid var(--gray-200);
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
       color: white;
     }
     .sidebar-header h1 {
@@ -242,7 +242,7 @@ import { PreviewComponent } from '../preview/preview.component';
     .modules-list h3 {
       margin: 0 0 16px 0;
       font-size: 16px;
-      color: #374151;
+      color: var(--gray-700);
       font-weight: 600;
     }
     .module-template {
@@ -250,7 +250,7 @@ import { PreviewComponent } from '../preview/preview.component';
       align-items: center;
       gap: 12px;
       padding: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--gray-200);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
@@ -258,10 +258,10 @@ import { PreviewComponent } from '../preview/preview.component';
       position: relative;
     }
     .module-template:hover {
-      border-color: #64CEC7;
-      background: #f8fafc;
+      border-color: var(--primary-color);
+      background: var(--gray-50);
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-sm);
     }
     .sidebar.collapsed .module-template {
       justify-content: center;
@@ -274,10 +274,10 @@ import { PreviewComponent } from '../preview/preview.component';
       left: 100%;
       top: 0;
       background: white;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--gray-200);
       border-radius: 8px;
       padding: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-md);
       z-index: 1000;
       white-space: nowrap;
       margin-left: 8px;
@@ -289,7 +289,7 @@ import { PreviewComponent } from '../preview/preview.component';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f1f5f9;
+      background: var(--gray-100);
       border-radius: 6px;
     }
     .template-info {
@@ -297,16 +297,16 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .template-name {
       font-weight: 600;
-      color: #1e293b;
+      color: var(--gray-800);
       margin-bottom: 2px;
     }
     .template-description {
       font-size: 12px;
-      color: #64748b;
+      color: var(--gray-600);
     }
     .sidebar-actions {
       padding: 20px;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--gray-200);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -320,25 +320,25 @@ import { PreviewComponent } from '../preview/preview.component';
       transition: all 0.2s;
     }
     .export-btn {
-      background: #226D68;
+      background: var(--primary-color);
       color: white;
     }
     .export-btn:hover:not(:disabled) {
-      background: #1a5a56;
+      background: var(--primary-dark);
       transform: translateY(-1px);
     }
     .export-btn:disabled {
-      background: #94a3b8;
+      background: var(--gray-400);
       cursor: not-allowed;
     }
     .clear-btn {
-      background: #f1f5f9;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: var(--gray-100);
+      color: var(--gray-600);
+      border: 1px solid var(--gray-200);
     }
     .clear-btn:hover:not(:disabled) {
-      background: #e2e8f0;
-      color: #475569;
+      background: var(--gray-200);
+      color: var(--gray-700);
     }
     .clear-btn:disabled {
       opacity: 0.5;
@@ -367,13 +367,13 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .editor-header h2 {
       margin: 0;
-      color: #226D68;
+      color: var(--primary-color);
       font-size: 20px;
       font-weight: 600;
     }
     .module-count {
-      background: #e0e7ff;
-      color: #3730a3;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary-color);
       padding: 4px 12px;
       border-radius: 12px;
       font-size: 12px;
@@ -401,9 +401,9 @@ import { PreviewComponent } from '../preview/preview.component';
       cursor: grab;
       opacity: 0;
       transition: opacity 0.2s;
-      background: #f1f5f9;
+      background: var(--gray-100);
       border-radius: 6px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--gray-200);
       flex-shrink: 0;
       margin-top: 8px;
     }
@@ -421,7 +421,7 @@ import { PreviewComponent } from '../preview/preview.component';
     .dot {
       width: 3px;
       height: 3px;
-      background: #64748b;
+      background: var(--gray-500);
       border-radius: 50%;
     }
     .module-content {
@@ -430,7 +430,7 @@ import { PreviewComponent } from '../preview/preview.component';
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: #64748b;
+      color: var(--gray-600);
     }
     .empty-icon {
       font-size: 48px;
@@ -438,7 +438,7 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .empty-state h3 {
       margin: 0 0 8px 0;
-      color: #374151;
+      color: var(--gray-700);
     }
     .empty-state p {
       margin: 0;
@@ -463,13 +463,13 @@ import { PreviewComponent } from '../preview/preview.component';
       padding: 32px;
       border-radius: 12px;
       text-align: center;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-xl);
     }
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid #e2e8f0;
-      border-top: 4px solid #226D68;
+      border: 4px solid var(--gray-200);
+      border-top: 4px solid var(--primary-color);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto 16px;
@@ -480,7 +480,7 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .loading-content p {
       margin: 0;
-      color: #374151;
+      color: var(--gray-700);
       font-weight: 500;
     }
     
@@ -488,20 +488,20 @@ import { PreviewComponent } from '../preview/preview.component';
     .cdk-drag-preview {
       box-sizing: border-box;
       border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-lg);
       opacity: 0.9;
     }
     .cdk-drag-placeholder {
       opacity: 0.3;
-      border: 2px dashed #cbd5e1;
-      background: #f8fafc;
+      border: 2px dashed var(--gray-300);
+      background: var(--gray-50);
       border-radius: 8px;
       margin-bottom: 16px;
       min-height: 80px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--gray-600);
       font-style: italic;
     }
     .cdk-drag-placeholder::after {

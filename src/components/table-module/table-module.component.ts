@@ -62,27 +62,27 @@ import { TableModule } from '../../models/module.interface';
   `,
   styles: [`
     .module-container {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--gray-200);
       border-radius: 8px;
       margin-bottom: 16px;
       background: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-sm);
     }
     .module-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 12px 16px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
       border-radius: 8px 8px 0 0;
     }
     .module-type {
       font-weight: 600;
-      color: #334155;
+      color: var(--gray-700);
     }
     .delete-btn {
-      background: #ef4444;
+      background: var(--error-color);
       color: white;
       border: none;
       border-radius: 4px;
@@ -104,7 +104,7 @@ import { TableModule } from '../../models/module.interface';
       margin-bottom: 12px;
     }
     .action-btn {
-      background: #2563eb;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 6px 12px;
@@ -113,7 +113,7 @@ import { TableModule } from '../../models/module.interface';
       font-size: 12px;
     }
     .action-btn:hover {
-      background: #1d4ed8;
+      background: var(--primary-dark);
     }
     .table-container {
       overflow-x: auto;
@@ -121,17 +121,17 @@ import { TableModule } from '../../models/module.interface';
     .editable-table {
       width: 100%;
       border-collapse: collapse;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--gray-300);
     }
     .editable-table th,
     .editable-table td {
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--gray-300);
       padding: 4px;
       position: relative;
       vertical-align: top;
     }
     .editable-table th {
-      background: #f3f4f6;
+      background: var(--gray-100);
       font-weight: 600;
     }
     .editable-table textarea {
@@ -147,11 +147,11 @@ import { TableModule } from '../../models/module.interface';
       line-height: 1.4;
     }
     .editable-table textarea:focus {
-      outline: 2px solid #64CEC7;
+      outline: 2px solid var(--primary-color);
       outline-offset: -2px;
     }
     .remove-btn {
-      background: #ef4444;
+      background: var(--error-color);
       color: white;
       border: none;
       border-radius: 2px;
@@ -169,9 +169,9 @@ import { TableModule } from '../../models/module.interface';
     }
     .row-actions {
       width: 30px;
-      background: #f9fafb;
+      background: var(--gray-50);
       text-align: center;
-      border-left: 2px solid #e5e7eb !important;
+      border-left: 2px solid var(--gray-200) !important;
     }
   `]
 })

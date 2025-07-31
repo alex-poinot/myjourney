@@ -80,12 +80,12 @@ import { Module } from '../../models/module.interface';
   styles: [`
     .preview-container {
       background: white;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-md);
       border-radius: 8px;
       overflow: hidden;
     }
     .preview-header {
-      background: #1e293b;
+      background: var(--gray-800);
       color: white;
       padding: 16px 20px;
     }
@@ -105,27 +105,27 @@ import { Module } from '../../models/module.interface';
     .title-h1 {
       font-size: 32px;
       font-weight: 700;
-      color: #226D68;
+      color: var(--primary-color);
       margin: 0 0 16px 0;
-      border-bottom: 3px solid #64CEC7;
+      border-bottom: 3px solid var(--secondary-color);
       padding-bottom: 8px;
     }
     .title-h2 {
       font-size: 24px;
       font-weight: 600;
-      color: #334155;
+      color: var(--gray-700);
       margin: 24px 0 12px 0;
     }
     .title-h3 {
       font-size: 20px;
       font-weight: 500;
-      color: #475569;
+      color: var(--gray-600);
       margin: 20px 0 10px 0;
     }
     .subtitle {
       font-size: 18px;
       font-weight: 500;
-      color: #64748b;
+      color: var(--gray-600);
       margin: 16px 0 8px 0;
       font-style: italic;
     }
@@ -141,7 +141,7 @@ import { Module } from '../../models/module.interface';
       max-width: 100%;
       height: auto;
       border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: var(--shadow-md);
     }
     .table-content {
       margin: 20px 0;
@@ -154,7 +154,7 @@ import { Module } from '../../models/module.interface';
     }
     .preview-table th,
     .preview-table td {
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--gray-300);
       padding: 8px 12px;
       text-align: left;
       word-wrap: break-word;
@@ -164,16 +164,16 @@ import { Module } from '../../models/module.interface';
       max-width: 200px;
     }
     .preview-table th {
-      background: #f8fafc;
+      background: var(--gray-50);
       font-weight: 600;
-      color: #374151;
+      color: var(--gray-700);
     }
     .preview-table tr:nth-child(even) {
-      background: #f9fafb;
+      background: var(--gray-50);
     }
     .empty-preview {
       text-align: center;
-      color: #64748b;
+      color: var(--gray-600);
       font-style: italic;
       padding: 40px 20px;
     }
