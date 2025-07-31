@@ -28,22 +28,54 @@ export class PdfService {
       
       // Format A4
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Marges pour header et footer
+      const headerHeight = 15;
+      const footerHeight = 15;
+      const contentHeight = pageHeight - headerHeight - footerHeight;
+      
       let heightLeft = imgHeight;
       let position = 0;
+      let pageNumber = 1;
+
+      // Fonction pour ajouter header
+      const addHeader = () => {
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('GRANT THORNTON', pageWidth / 2, 10, { align: 'center' });
+      };
+
+      // Fonction pour ajouter footer
+      const addFooter = (currentPage: number, totalPages: number) => {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Page ${currentPage} sur ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+      };
+
+      // Calculer le nombre total de pages
+      const totalPages = Math.ceil(imgHeight / contentHeight);
 
       // Première page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      addHeader();
+      pdf.addImage(imgData, 'PNG', 0, headerHeight, imgWidth, imgHeight);
+      addFooter(pageNumber, totalPages);
+      heightLeft -= contentHeight;
 
       // Pages supplémentaires si nécessaire
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        pageNumber++;
+        
+        addHeader();
+        pdf.addImage(imgData, 'PNG', 0, headerHeight + position, imgWidth, imgHeight);
+        addFooter(pageNumber, totalPages);
+        
+        heightLeft -= contentHeight;
       }
 
       pdf.save(filename);

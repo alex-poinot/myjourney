@@ -24,13 +24,12 @@ import { TableModule } from '../../models/module.interface';
             <thead>
               <tr>
                 <th *ngFor="let header of module.headers; let i = index">
-                  <textarea 
-                    [(ngModel)]="module.headers[i]" 
-                    (input)="onInput($event)"
+                  <input 
+                    type="text"
+                    [value]="module.headers[i]" 
+                    (input)="updateHeader(i, $event)"
                     placeholder="En-tête"
-                    rows="1"
-                    [attr.data-header]="i">
-                  </textarea>
+                    class="header-input">
                   <button class="remove-btn" (click)="removeColumn(i)" 
                           *ngIf="module.headers.length > 1">×</button>
                 </th>
@@ -39,13 +38,12 @@ import { TableModule } from '../../models/module.interface';
             <tbody>
               <tr *ngFor="let row of module.rows; let i = index">
                 <td *ngFor="let cell of row; let j = index">
-                  <textarea 
-                    [(ngModel)]="module.rows[i][j]" 
-                    (input)="onInput($event)"
+                  <input 
+                    type="text"
+                    [value]="module.rows[i][j]" 
+                    (input)="updateCell(i, j, $event)"
                     placeholder="Données"
-                    rows="1"
-                    [attr.data-cell]="i + '-' + j">
-                  </textarea>
+                    class="cell-input">
                 </td>
                 <td class="row-actions">
                   <button class="remove-btn" (click)="removeRow(i)" 
@@ -127,26 +125,27 @@ import { TableModule } from '../../models/module.interface';
       padding: 4px;
       position: relative;
       vertical-align: top;
+      min-width: 120px;
     }
     .editable-table th {
       background: var(--gray-100);
       font-weight: 600;
     }
-    .editable-table textarea {
+    .header-input,
+    .cell-input {
       width: 100%;
       border: none;
-      padding: 4px;
+      padding: 8px;
       background: transparent;
       font-size: 14px;
-      resize: none;
-      overflow: hidden;
-      min-height: 20px;
       font-family: inherit;
       line-height: 1.4;
+      outline: none;
     }
-    .editable-table textarea:focus {
-      outline: 2px solid var(--secondary-color);
-      outline-offset: -2px;
+    .header-input:focus,
+    .cell-input:focus {
+      background: rgba(34, 109, 104, 0.05);
+      border-radius: 4px;
     }
     .remove-btn {
       background: var(--error-color);
@@ -178,18 +177,16 @@ export class TableModuleComponent {
   @Output() moduleChange = new EventEmitter<TableModule>();
   @Output() deleteModule = new EventEmitter<string>();
 
-  onUpdate(): void {
+  updateHeader(index: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.module.headers[index] = target.value;
     this.moduleChange.emit(this.module);
   }
 
-  onInput(event: Event): void {
-    const target = event.target as HTMLTextAreaElement;
-    
-    // Auto-resize on input
-    target.style.height = 'auto';
-    target.style.height = Math.max(20, target.scrollHeight) + 'px';
-    
-    this.onUpdate();
+  updateCell(rowIndex: number, colIndex: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.module.rows[rowIndex][colIndex] = target.value;
+    this.moduleChange.emit(this.module);
   }
 
   onDelete(): void {
@@ -199,27 +196,27 @@ export class TableModuleComponent {
   addColumn(): void {
     this.module.headers.push('Nouvelle colonne');
     this.module.rows.forEach(row => row.push(''));
-    this.onUpdate();
+    this.moduleChange.emit(this.module);
   }
 
   addRow(): void {
     const newRow = new Array(this.module.headers.length).fill('');
     this.module.rows.push(newRow);
-    this.onUpdate();
+    this.moduleChange.emit(this.module);
   }
 
   removeColumn(index: number): void {
     if (this.module.headers.length > 1) {
       this.module.headers.splice(index, 1);
       this.module.rows.forEach(row => row.splice(index, 1));
-      this.onUpdate();
+      this.moduleChange.emit(this.module);
     }
   }
 
   removeRow(index: number): void {
     if (this.module.rows.length > 1) {
       this.module.rows.splice(index, 1);
-      this.onUpdate();
+      this.moduleChange.emit(this.module);
     }
   }
 }
