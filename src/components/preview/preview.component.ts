@@ -107,7 +107,7 @@ import { Module } from '../../models/module.interface';
       font-weight: 700;
       color: var(--primary-color);
       margin: 0 0 16px 0;
-      border-bottom: 3px solid var(--secondary-color);
+      border-bottom: 3px solid var(--primary-light);
       padding-bottom: 8px;
     }
     .title-h2 {

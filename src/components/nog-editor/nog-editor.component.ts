@@ -372,7 +372,7 @@ import { PreviewComponent } from '../preview/preview.component';
       font-weight: 600;
     }
     .module-count {
-      background: rgba(37, 99, 235, 0.1);
+      background: rgba(34, 109, 104, 0.1);
       color: var(--primary-color);
       padding: 4px 12px;
       border-radius: 12px;
