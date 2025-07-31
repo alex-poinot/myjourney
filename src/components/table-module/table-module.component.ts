@@ -29,7 +29,6 @@ import { TableModule } from '../../models/module.interface';
                     (input)="onInput($event)"
                     placeholder="En-tête"
                     rows="1"
-                    (keydown)="onKeyDown($event, 'header', -1, i)"
                     [attr.data-header]="i">
                   </textarea>
                   <button class="remove-btn" (click)="removeColumn(i)" 
@@ -45,7 +44,6 @@ import { TableModule } from '../../models/module.interface';
                     (input)="onInput($event)"
                     placeholder="Données"
                     rows="1"
-                    (keydown)="onKeyDown($event, 'cell', i, j)"
                     [attr.data-cell]="i + '-' + j">
                   </textarea>
                 </td>
@@ -184,51 +182,6 @@ export class TableModuleComponent {
     this.moduleChange.emit(this.module);
   }
 
-  onKeyDown(event: KeyboardEvent, type: 'header' | 'cell', rowIndex: number, colIndex: number): void {
-    // Navigation avec Tab seulement (pas Enter pour permettre les retours à la ligne)
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      
-      let nextElement: HTMLElement | null = null;
-      
-      if (type === 'header') {
-        if (event.shiftKey) {
-          // Aller à la colonne précédente
-          if (colIndex > 0) {
-            nextElement = document.querySelector(`[data-header="${colIndex - 1}"]`) as HTMLElement;
-          }
-        } else {
-          // Aller à la colonne suivante ou première cellule
-          if (colIndex < this.module.headers.length - 1) {
-            nextElement = document.querySelector(`[data-header="${colIndex + 1}"]`) as HTMLElement;
-          } else if (this.module.rows.length > 0) {
-            nextElement = document.querySelector(`[data-cell="0-0"]`) as HTMLElement;
-          }
-        }
-      } else {
-        if (event.shiftKey) {
-          // Aller à la cellule précédente
-          if (colIndex > 0) {
-            nextElement = document.querySelector(`[data-cell="${rowIndex}-${colIndex - 1}"]`) as HTMLElement;
-          } else if (rowIndex > 0) {
-            nextElement = document.querySelector(`[data-cell="${rowIndex - 1}-${this.module.headers.length - 1}"]`) as HTMLElement;
-          }
-        } else {
-          // Aller à la cellule suivante
-          if (colIndex < this.module.headers.length - 1) {
-            nextElement = document.querySelector(`[data-cell="${rowIndex}-${colIndex + 1}"]`) as HTMLElement;
-          } else if (rowIndex < this.module.rows.length - 1) {
-            nextElement = document.querySelector(`[data-cell="${rowIndex + 1}-0"]`) as HTMLElement;
-          }
-        }
-      }
-      
-      if (nextElement) {
-        nextElement.focus();
-      }
-    }
-  }
-
   onInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
     
@@ -236,10 +189,7 @@ export class TableModuleComponent {
     target.style.height = 'auto';
     target.style.height = Math.max(20, target.scrollHeight) + 'px';
     
-    // Délai pour éviter les appels trop fréquents
-    setTimeout(() => {
-      this.onUpdate();
-    }, 0);
+    this.onUpdate();
   }
 
   onDelete(): void {
