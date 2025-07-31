@@ -11,7 +11,7 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
   imports: [CommonModule, NavbarComponent, DashboardComponent, NogEditorComponent],
   template: `
     <div class="app-container">
-      <app-navbar (tabSelected)="onTabSelected($event)"></app-navbar>
+      <app-navbar (tabChange)="onTabSelected($event)"></app-navbar>
       <main class="main-content">
         <app-dashboard *ngIf="currentTab === 'dashboard'"></app-dashboard>
         <app-nog-editor *ngIf="currentTab === 'NOG'"></app-nog-editor>
