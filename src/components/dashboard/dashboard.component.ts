@@ -141,7 +141,7 @@ interface GroupData {
               <ng-container *ngFor="let client of group.clients; let clientIndex = index">
                 <!-- Ligne de sous-groupe (client) -->
                 <tr class="group-row client-group" 
-                    [class.hidden]="!group.expanded"
+                    [class.hidden]="!group.expanded || !client.expanded"
                     (click)="toggleClientGroup(groupIndex, clientIndex)">
                   <td class="client-indent"></td>
                   <td class="client-cell" colspan="4">
@@ -681,12 +681,10 @@ export class DashboardComponent implements OnInit {
   toggleMainGroup(index: number): void {
     this.groupedData[index].expanded = !this.groupedData[index].expanded;
     
-    // Si on ferme le groupe, fermer aussi tous les sous-groupes (clients)
-    if (!this.groupedData[index].expanded) {
-      this.groupedData[index].clients.forEach(client => {
-        client.expanded = false;
-      });
-    }
+    // Quand on ouvre/ferme le groupe, synchroniser tous les clients avec l'état du groupe
+    this.groupedData[index].clients.forEach(client => {
+      client.expanded = this.groupedData[index].expanded;
+    });
   }
 
   toggleClientGroup(groupIndex: number, clientIndex: number): void {
