@@ -83,11 +83,15 @@ import { Module } from '../../models/module.interface';
       box-shadow: var(--shadow-md);
       border-radius: 8px;
       overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
     .preview-header {
       background: var(--gray-800);
       color: white;
       padding: 16px 20px;
+      flex-shrink: 0;
     }
     .preview-header h2 {
       margin: 0;
@@ -96,8 +100,10 @@ import { Module } from '../../models/module.interface';
     }
     .preview-content {
       padding: 24px;
-      min-height: 400px;
       line-height: 1.6;
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
     }
     .preview-module {
       margin-bottom: 20px;

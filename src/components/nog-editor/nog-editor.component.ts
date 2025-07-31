@@ -358,6 +358,7 @@ import { PreviewComponent } from '../preview/preview.component';
       display: flex;
       flex-direction: column;
       max-height: calc(100vh - 128px);
+      min-height: 0;
     }
     .editor-header {
       display: flex;
