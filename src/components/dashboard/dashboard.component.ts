@@ -56,21 +56,21 @@ interface MissionData {
                 Information
               </th>
               <!-- Groupe Avant la mission -->
-              <th [colspan]="avantMissionCollapsed ? 1 : 6" class="column-group-header avant-mission">
+              <th [attr.colspan]="avantMissionCollapsed ? 1 : 6" class="column-group-header avant-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('avantMission')">
                   {{ avantMissionCollapsed ? '▶' : '▼' }}
                 </button>
                 Avant la mission
               </th>
               <!-- Groupe Pendant la mission -->
-              <th [colspan]="pendantMissionCollapsed ? 1 : 5" class="column-group-header pendant-mission">
+              <th [attr.colspan]="pendantMissionCollapsed ? 1 : 5" class="column-group-header pendant-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('pendantMission')">
                   {{ pendantMissionCollapsed ? '▶' : '▼' }}
                 </button>
                 Pendant la mission
               </th>
               <!-- Groupe Fin de mission -->
-              <th [colspan]="finMissionCollapsed ? 1 : 5" class="column-group-header fin-mission">
+              <th [attr.colspan]="finMissionCollapsed ? 1 : 5" class="column-group-header fin-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('finMission')">
                   {{ finMissionCollapsed ? '▶' : '▼' }}
                 </button>
