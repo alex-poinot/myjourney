@@ -14,17 +14,14 @@ export interface TabGroup {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <nav class="navbar-vertical">
+    <nav class="navbar-horizontal">
       <!-- Logo et titre -->
-      <div class="navbar-header">
+      <div class="navbar-brand" (click)="goToHome()">
         <div class="logo">🤖</div>
-        <h1 class="brand-title" [class.hidden]="isCollapsed">MyJourney</h1>
-        <button class="collapse-toggle" (click)="toggleNavbar()">
-          {{ isCollapsed ? '→' : '←' }}
-        </button>
+        <h1 class="brand-title">MyJourney</h1>
       </div>
 
-      <!-- Menu vertical -->
+      <!-- Menu horizontal -->
       <div class="navbar-menu">
         <div *ngFor="let group of tabGroups" 
              class="menu-group"
@@ -32,65 +29,63 @@ export interface TabGroup {
              (mouseleave)="onGroupHover(group, false)">
           
           <!-- Icône du groupe -->
-          <div class="group-icon" 
+          <div class="group-button" 
                [class.active]="isGroupActive(group)"
                (click)="toggleGroup(group)">
             <span class="icon">{{ group.icon }}</span>
-            <span class="group-name" *ngIf="!isCollapsed">{{ group.name }}</span>
-            <span class="expand-icon" *ngIf="!isCollapsed">
-              {{ group.collapsed ? '▶' : '▼' }}
-            </span>
+            <span class="group-name">{{ group.name }}</span>
+            <span class="expand-icon">{{ group.collapsed ? '▼' : '▲' }}</span>
           </div>
           
-          <!-- Liste des onglets (visible si pas collapsed ou au hover) -->
-          <div class="tab-list" 
-               [class.visible]="(!group.collapsed && !isCollapsed) || group.hovered"
-               [class.hover-menu]="isCollapsed && group.hovered">
+          <!-- Dropdown des onglets -->
+          <div class="dropdown-menu" 
+               [class.visible]="!group.collapsed || group.hovered">
             <div *ngFor="let tab of group.tabs" 
-                 class="tab-item"
+                 class="dropdown-item"
                  [class.active]="activeTab === tab"
                  (click)="onTabClick(tab)">
-              <span class="tab-name">{{ tab }}</span>
+              {{ tab }}
             </div>
           </div>
         </div>
       </div>
 
       <!-- Profil utilisateur -->
-      <div class="navbar-profile" [class.collapsed]="isCollapsed">
+      <div class="navbar-profile">
         <img [src]="userPhoto" [alt]="userName" class="profile-photo">
-        <span class="profile-name" *ngIf="!isCollapsed">{{ userName }}</span>
+        <span class="profile-name">{{ userName }}</span>
       </div>
     </nav>
   `,
   styles: [`
-    .navbar-vertical {
+    .navbar-horizontal {
       position: fixed;
-      left: 0;
       top: 0;
-      height: 100vh;
-      width: 280px;
+      left: 0;
+      right: 0;
+      height: 70px;
       background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
       color: white;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       z-index: 100;
-      transition: width 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .navbar-vertical.collapsed {
-      width: 70px;
-    }
-
-    .navbar-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 20px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: relative;
+      padding: 0 24px;
+      gap: 32px;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .navbar-brand:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     .logo {
@@ -99,7 +94,6 @@ export interface TabGroup {
       border-radius: 8px;
       padding: 6px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      flex-shrink: 0;
     }
 
     .brand-title {
@@ -107,154 +101,110 @@ export interface TabGroup {
       font-size: 20px;
       font-weight: 700;
       margin: 0;
-      margin-left: 12px;
       background: linear-gradient(45deg, #60a5fa, #a78bfa);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      transition: opacity 0.3s ease;
-      flex: 1;
-    }
-
-    .brand-title.hidden {
-      opacity: 0;
-      width: 0;
-      margin: 0;
-      overflow: hidden;
-    }
-
-    .collapse-toggle {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      flex: 1;
-      flex-shrink: 0;
-    }
-
-    .collapse-toggle:hover {
-      background: rgba(255,255,255,0.2);
     }
 
     .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex: 1;
-      padding: 16px 0;
-      overflow-y: auto;
     }
 
     .menu-group {
-      margin-bottom: 8px;
       position: relative;
     }
 
-    .group-icon {
+    .group-button {
       display: flex;
       align-items: center;
-      padding: 12px 16px;
+      gap: 8px;
+      padding: 10px 16px;
       cursor: pointer;
       transition: all 0.2s ease;
       border-radius: 8px;
-      margin: 0 8px;
-      position: relative;
+      white-space: nowrap;
     }
 
-    .group-icon:hover {
+    .group-button:hover {
       background: rgba(255,255,255,0.1);
     }
 
-    .group-icon.active {
+    .group-button.active {
       background: rgba(59, 130, 246, 0.3);
-      border-left: 3px solid #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.5);
     }
 
     .icon {
-      font-size: 20px;
-      width: 24px;
-      text-align: center;
-      flex-shrink: 0;
+      font-size: 18px;
     }
 
     .group-name {
-      margin-left: 12px;
       font-weight: 500;
-      flex: 1;
-      transition: opacity 0.3s ease;
+      font-size: 14px;
     }
 
     .expand-icon {
-      font-size: 12px;
+      font-size: 10px;
       color: #cbd5e1;
       transition: transform 0.2s ease;
     }
 
-    .tab-list {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-      background: rgba(0,0,0,0.2);
-      margin: 0 8px;
-      border-radius: 6px;
-    }
-
-    .tab-list.visible {
-      max-height: 300px;
-      padding: 8px 0;
-    }
-
-    .tab-list.hover-menu {
+    .dropdown-menu {
       position: absolute;
-      left: 100%;
-      top: 0;
-      width: 200px;
+      top: 100%;
+      left: 0;
+      min-width: 200px;
       background: #1e293b;
       border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 4px 0 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      margin: 0;
       border-radius: 8px;
-      max-height: none;
-      padding: 8px;
-    }
-
-    .tab-item {
-      padding: 8px 16px;
-      cursor: pointer;
-      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
       transition: all 0.2s ease;
-      margin: 2px 0;
+      z-index: 1000;
+      margin-top: 8px;
     }
 
-    .tab-item:hover {
+    .dropdown-menu.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 6px;
+      margin: 4px;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
       background: rgba(255,255,255,0.15);
     }
 
-    .tab-item.active {
+    .dropdown-item.active {
       background: #3b82f6;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
       font-weight: 600;
-    }
-
-    .tab-name {
-      font-size: 14px;
     }
 
     .navbar-profile {
       display: flex;
       align-items: center;
-      padding: 16px;
-      border-top: 1px solid rgba(255,255,255,0.1);
       gap: 12px;
-      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
     }
 
-    .navbar-profile.collapsed {
-      justify-content: center;
-      padding: 16px 8px;
+    .navbar-profile:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     .profile-photo {
@@ -263,42 +213,53 @@ export interface TabGroup {
       border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.2);
       object-fit: cover;
-      flex-shrink: 0;
     }
 
     .profile-name {
       font-weight: 500;
       color: #f1f5f9;
       font-size: 14px;
-      transition: opacity 0.3s ease;
     }
 
-    /* Scrollbar personnalisée */
-    .navbar-menu::-webkit-scrollbar {
-      width: 4px;
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .navbar-horizontal {
+        padding: 0 16px;
+        gap: 16px;
+      }
+      
+      .group-name {
+        display: none;
+      }
+      
+      .profile-name {
+        display: none;
+      }
     }
 
-    .navbar-menu::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.1);
-    }
-
-    .navbar-menu::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.3);
-      border-radius: 2px;
-    }
-
-    .navbar-menu::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.5);
+    @media (max-width: 768px) {
+      .navbar-horizontal {
+        height: 60px;
+        padding: 0 12px;
+        gap: 8px;
+      }
+      
+      .brand-title {
+        font-size: 16px;
+      }
+      
+      .logo {
+        font-size: 24px;
+        padding: 4px;
+      }
     }
   `]
 })
 export class NavbarComponent {
-  @Input() activeTab: string = 'Accueil';
+  @Input() activeTab: string = 'dashboard';
   @Input() userName: string = 'Jean Dupont';
   @Input() userPhoto: string = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100';
   @Output() tabChange = new EventEmitter<string>();
-
-  isCollapsed = false;
 
   tabGroups: TabGroup[] = [
     {
@@ -321,14 +282,8 @@ export class NavbarComponent {
     }
   ];
 
-  toggleNavbar(): void {
-    this.isCollapsed = !this.isCollapsed;
-  }
-
   toggleGroup(group: TabGroup): void {
-    if (!this.isCollapsed) {
-      group.collapsed = !group.collapsed;
-    }
+    group.collapsed = !group.collapsed;
   }
 
   onGroupHover(group: TabGroup, isHovered: boolean): void {
@@ -341,5 +296,9 @@ export class NavbarComponent {
 
   onTabClick(tab: string): void {
     this.tabChange.emit(tab);
+  }
+
+  goToHome(): void {
+    this.tabChange.emit('dashboard');
   }
 }
