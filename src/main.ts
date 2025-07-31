@@ -12,7 +12,7 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
   template: `
     <div class="app-container">
       <app-navbar (tabChange)="onTabSelected($event)"></app-navbar>
-      <main class="main-content">
+      <main class="main-content" [class.navbar-collapsed]="false">
         <app-dashboard *ngIf="currentTab === 'dashboard'"></app-dashboard>
         <app-nog-editor *ngIf="currentTab === 'NOG'"></app-nog-editor>
         <div *ngIf="currentTab !== 'dashboard' && currentTab !== 'NOG'" class="coming-soon">
@@ -26,13 +26,18 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
     .app-container {
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
     }
     
     .main-content {
+      margin-left: 280px;
       flex: 1;
-      padding: 20px;
-      background-color: #f8f9fa;
+      background: #f8fafc;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+
+    .main-content.navbar-collapsed {
+      margin-left: 70px;
     }
     
     .coming-soon {
@@ -42,6 +47,7 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
       justify-content: center;
       height: 60vh;
       text-align: center;
+      padding: 20px;
     }
     
     .coming-soon h2 {
