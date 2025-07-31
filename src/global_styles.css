@@ -5,12 +5,12 @@
 
 :root {
   /* Couleurs principales */
-  --primary-color: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #3b82f6;
-  --secondary-color: #10b981;
-  --secondary-dark: #059669;
-  --secondary-light: #34d399;
+  --primary-color: #226D68;
+  --primary-dark: #143E3B;
+  --primary-light: #64CEC7;
+  --secondary-color: #64CEC7;
+  --secondary-dark: #143E3B;
+  --secondary-light: #7DD3D8;
   
   /* Couleurs neutres */
   --gray-50: #f9fafb;
@@ -106,7 +106,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
+  background: var(--secondary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -123,7 +123,7 @@ body {
 }
 
 .btn-secondary:hover {
-  background: var(--secondary-dark);
+  background: var(--primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -218,12 +218,12 @@ input:focus, textarea:focus, select:focus {
 }
 
 .badge-primary {
-  background: rgba(37, 99, 235, 0.1);
+  background: rgba(34, 109, 104, 0.1);
   color: var(--primary-color);
 }
 
 .badge-secondary {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(100, 206, 199, 0.1);
   color: var(--secondary-color);
 }
 

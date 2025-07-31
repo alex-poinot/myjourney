@@ -303,7 +303,7 @@ interface MissionData {
     }
 
     .column-header.percentage {
-      background: rgba(37, 99, 235, 0.1);
+      background: rgba(34, 109, 104, 0.1);
       color: var(--primary-color);
       min-width: 60px;
     }
@@ -390,12 +390,12 @@ interface MissionData {
     }
 
     .progress-circle[data-percentage="75"] {
-      background: rgba(16, 185, 129, 0.1);
+      background: rgba(100, 206, 199, 0.1);
       color: var(--success-color);
     }
 
     .progress-circle[data-percentage="100"] {
-      background: rgba(16, 185, 129, 0.1);
+      background: rgba(100, 206, 199, 0.1);
       color: var(--success-color);
     }
 

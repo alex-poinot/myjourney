@@ -17,7 +17,7 @@ export interface TabGroup {
     <nav class="navbar-horizontal">
       <!-- Logo et titre -->
       <div class="navbar-brand" (click)="goToHome()">
-        <div class="logo">🤖</div>
+        <div class="logo-robot">🤖</div>
         <h1 class="brand-title">MyJourney</h1>
       </div>
 
@@ -32,7 +32,6 @@ export interface TabGroup {
           <div class="group-button" 
                [class.active]="isGroupActive(group)"
                (click)="toggleGroup(group)">
-            <span class="icon">{{ group.icon }}</span>
             <span class="group-name">{{ group.name }}</span>
             <span class="expand-icon">{{ group.collapsed ? '▼' : '▲' }}</span>
           </div>
@@ -86,15 +85,16 @@ export interface TabGroup {
     }
 
     .navbar-brand:hover {
-      background: rgba(37, 99, 235, 0.05);
+      background: rgba(34, 109, 104, 0.05);
     }
 
     .logo {
       font-size: 28px;
-      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-      border-radius: 8px;
-      padding: 6px;
-      box-shadow: var(--shadow-sm);
+    }
+
+    .logo-robot {
+      font-size: 32px;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
     }
 
     .brand-title {
@@ -131,16 +131,12 @@ export interface TabGroup {
     }
 
     .group-button:hover {
-      background: rgba(37, 99, 235, 0.05);
+      background: rgba(34, 109, 104, 0.05);
     }
 
     .group-button.active {
-      background: rgba(37, 99, 235, 0.1);
+      background: rgba(34, 109, 104, 0.1);
       border: 1px solid var(--primary-color);
-    }
-
-    .icon {
-      font-size: 18px;
     }
 
     .group-name {
@@ -206,7 +202,7 @@ export interface TabGroup {
     }
 
     .navbar-profile:hover {
-      background: rgba(37, 99, 235, 0.05);
+      background: rgba(34, 109, 104, 0.05);
     }
 
     .profile-photo {
