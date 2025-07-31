@@ -158,21 +158,21 @@ interface GroupData {
                       {{ getClientAverage(client, 'avantMission') }}%
                     </div>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" colspan="{{ avantMissionCollapsed ? 0 : 5 }}"></td>
+                  <td *ngIf="!avantMissionCollapsed" [attr.colspan]="avantMissionCollapsed ? 0 : 5"></td>
                   
                   <td class="percentage-cell">
                     <div class="progress-circle" [attr.data-percentage]="getClientAverage(client, 'pendantMission')">
                       {{ getClientAverage(client, 'pendantMission') }}%
                     </div>
                   </td>
-                  <td *ngIf="!pendantMissionCollapsed" colspan="{{ pendantMissionCollapsed ? 0 : 4 }}"></td>
+                  <td *ngIf="!pendantMissionCollapsed" [attr.colspan]="pendantMissionCollapsed ? 0 : 4"></td>
                   
                   <td class="percentage-cell">
                     <div class="progress-circle" [attr.data-percentage]="getClientAverage(client, 'finMission')">
                       {{ getClientAverage(client, 'finMission') }}%
                     </div>
                   </td>
-                  <td *ngIf="!finMissionCollapsed" colspan="{{ finMissionCollapsed ? 0 : 4 }}"></td>
+                  <td *ngIf="!finMissionCollapsed" [attr.colspan]="finMissionCollapsed ? 0 : 4"></td>
                 </tr>
                 
                 <!-- Missions du client -->
