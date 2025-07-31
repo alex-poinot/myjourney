@@ -105,9 +105,9 @@ import { Module } from '../../models/module.interface';
     .title-h1 {
       font-size: 32px;
       font-weight: 700;
-      color: #1e293b;
+      color: #226D68;
       margin: 0 0 16px 0;
-      border-bottom: 3px solid #2563eb;
+      border-bottom: 3px solid #64CEC7;
       padding-bottom: 8px;
     }
     .title-h2 {

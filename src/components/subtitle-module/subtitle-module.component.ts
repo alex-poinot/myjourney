@@ -81,8 +81,8 @@ import { SubtitleModule } from '../../models/module.interface';
     }
     input:focus {
       outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      border-color: #64CEC7;
+      box-shadow: 0 0 0 3px rgba(100, 206, 199, 0.1);
     }
   `]
 })

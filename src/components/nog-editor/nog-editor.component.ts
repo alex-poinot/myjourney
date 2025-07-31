@@ -195,7 +195,7 @@ import { PreviewComponent } from '../preview/preview.component';
       right: -15px;
       width: 30px;
       height: 30px;
-      background: #2563eb;
+      background: #226D68;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -206,7 +206,7 @@ import { PreviewComponent } from '../preview/preview.component';
       transition: all 0.2s;
     }
     .sidebar-toggle:hover {
-      background: #1d4ed8;
+      background: #1a5a56;
       transform: scale(1.1);
     }
     .toggle-icon {
@@ -217,7 +217,7 @@ import { PreviewComponent } from '../preview/preview.component';
     .sidebar-header {
       padding: 24px 20px;
       border-bottom: 1px solid #e2e8f0;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      background: linear-gradient(135deg, #226D68 0%, #64CEC7 100%);
       color: white;
     }
     .sidebar-header h1 {
@@ -258,7 +258,7 @@ import { PreviewComponent } from '../preview/preview.component';
       position: relative;
     }
     .module-template:hover {
-      border-color: #2563eb;
+      border-color: #64CEC7;
       background: #f8fafc;
       transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -320,11 +320,11 @@ import { PreviewComponent } from '../preview/preview.component';
       transition: all 0.2s;
     }
     .export-btn {
-      background: #16a34a;
+      background: #226D68;
       color: white;
     }
     .export-btn:hover:not(:disabled) {
-      background: #15803d;
+      background: #1a5a56;
       transform: translateY(-1px);
     }
     .export-btn:disabled {
@@ -367,7 +367,7 @@ import { PreviewComponent } from '../preview/preview.component';
     }
     .editor-header h2 {
       margin: 0;
-      color: #1e293b;
+      color: #226D68;
       font-size: 20px;
       font-weight: 600;
     }
@@ -469,7 +469,7 @@ import { PreviewComponent } from '../preview/preview.component';
       width: 40px;
       height: 40px;
       border: 4px solid #e2e8f0;
-      border-top: 4px solid #2563eb;
+      border-top: 4px solid #226D68;
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto 16px;

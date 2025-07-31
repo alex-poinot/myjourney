@@ -147,7 +147,7 @@ import { TableModule } from '../../models/module.interface';
       line-height: 1.4;
     }
     .editable-table textarea:focus {
-      outline: 2px solid #2563eb;
+      outline: 2px solid #64CEC7;
       outline-offset: -2px;
     }
     .remove-btn {
