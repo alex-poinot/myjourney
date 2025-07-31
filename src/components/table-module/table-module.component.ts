@@ -185,8 +185,8 @@ export class TableModuleComponent {
   }
 
   onKeyDown(event: KeyboardEvent, type: 'header' | 'cell', rowIndex: number, colIndex: number): void {
-    // Navigation avec Tab et Enter seulement
-    if (event.key === 'Tab' || event.key === 'Enter') {
+    // Navigation avec Tab seulement (pas Enter pour permettre les retours à la ligne)
+    if (event.key === 'Tab') {
       event.preventDefault();
       
       let nextElement: HTMLElement | null = null;
@@ -236,7 +236,10 @@ export class TableModuleComponent {
     target.style.height = 'auto';
     target.style.height = Math.max(20, target.scrollHeight) + 'px';
     
-    this.onUpdate();
+    // Délai pour éviter les appels trop fréquents
+    setTimeout(() => {
+      this.onUpdate();
+    }, 0);
   }
 
   onDelete(): void {
