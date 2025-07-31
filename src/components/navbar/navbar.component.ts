@@ -6,6 +6,7 @@ export interface TabGroup {
   tabs: string[];
   icon: string;
   collapsed: boolean;
+  hovered?: boolean;
 }
 
 @Component({
