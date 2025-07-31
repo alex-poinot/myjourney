@@ -141,7 +141,7 @@ interface GroupData {
               <ng-container *ngFor="let client of group.clients; let clientIndex = index">
                 <!-- Ligne de sous-groupe (client) -->
                 <tr class="group-row client-group" 
-                    [class.hidden]="!group.expanded || !client.expanded"
+                    [class.hidden]="!group.expanded"
                     (click)="toggleClientGroup(groupIndex, clientIndex)">
                   <td class="client-indent"></td>
                   <td class="client-cell" colspan="4">
