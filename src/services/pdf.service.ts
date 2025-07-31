@@ -14,68 +14,128 @@ export class PdfService {
         throw new Error('Element not found');
       }
 
-      // Configuration pour une meilleure qualité
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        height: element.scrollHeight,
-        width: element.scrollWidth
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      
       // Format A4
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       // Marges pour header et footer
-      const headerHeight = 15;
-      const footerHeight = 15;
+      const headerHeight = 20;
+      const footerHeight = 20;
       const contentHeight = pageHeight - headerHeight - footerHeight;
-      
-      let heightLeft = imgHeight;
-      let position = 0;
+      const margin = 10;
+
+      let currentY = headerHeight + margin;
       let pageNumber = 1;
 
       // Fonction pour ajouter header
       const addHeader = () => {
-        pdf.setFontSize(14);
+        pdf.setFontSize(16);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('GRANT THORNTON', pageWidth / 2, 10, { align: 'center' });
+        pdf.text('GRANT THORNTON', pageWidth / 2, 15, { align: 'center' });
+        
+        // Ligne de séparation sous le header
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, headerHeight, pageWidth - margin, headerHeight);
       };
 
-      // Fonction pour ajouter footer
-      const addFooter = (currentPage: number, totalPages: number) => {
+      // Fonction pour ajouter footer avec numérotation temporaire
+      const addFooter = (currentPage: number) => {
+        const footerY = pageHeight - 10;
+        
+        // Ligne de séparation au-dessus du footer
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, pageHeight - footerHeight, pageWidth - margin, pageHeight - footerHeight);
+        
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`Page ${currentPage} sur ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+        pdf.text(`Page ${currentPage}`, pageWidth / 2, footerY, { align: 'center' });
       };
 
-      // Calculer le nombre total de pages
-      const totalPages = Math.ceil(imgHeight / contentHeight);
+      // Fonction pour créer une nouvelle page
+      const addNewPage = () => {
+        addFooter(pageNumber);
+        pdf.addPage();
+        pageNumber++;
+        addHeader();
+        currentY = headerHeight + margin;
+      };
 
       // Première page
       addHeader();
-      pdf.addImage(imgData, 'PNG', 0, headerHeight, imgWidth, imgHeight);
-      addFooter(pageNumber, totalPages);
-      heightLeft -= contentHeight;
 
-      // Pages supplémentaires si nécessaire
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pageNumber++;
+      // Traiter chaque module séparément
+      const modules = element.children;
+      
+      for (let i = 0; i < modules.length; i++) {
+        const moduleElement = modules[i] as HTMLElement;
         
-        addHeader();
-        pdf.addImage(imgData, 'PNG', 0, headerHeight + position, imgWidth, imgHeight);
-        addFooter(pageNumber, totalPages);
+        // Créer un canvas pour ce module spécifique
+        const canvas = await html2canvas(moduleElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: moduleElement.scrollWidth,
+          height: moduleElement.scrollHeight
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = pageWidth - (2 * margin);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Vérifier si le module peut tenir sur la page actuelle
+        if (currentY + imgHeight > pageHeight - footerHeight - margin) {
+          // Le module ne peut pas tenir, créer une nouvelle page
+          addNewPage();
+        }
+
+        // Ajouter l'image du module
+        pdf.addImage(imgData, 'PNG', margin, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 5; // Ajouter un petit espacement entre les modules
+
+        // Vérifier si on a besoin d'une nouvelle page pour le prochain module
+        if (i < modules.length - 1) {
+          const nextModule = modules[i + 1] as HTMLElement;
+          const nextCanvas = await html2canvas(nextModule, {
+            scale: 1,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            width: nextModule.scrollWidth,
+            height: nextModule.scrollHeight
+          });
+          
+          const nextImgHeight = (nextCanvas.height * imgWidth) / nextCanvas.width;
+          
+          if (currentY + nextImgHeight > pageHeight - footerHeight - margin) {
+            addNewPage();
+          }
+        }
+      }
+
+      // Ajouter le footer à la dernière page
+      addFooter(pageNumber);
+
+      // Maintenant, mettre à jour tous les footers avec le nombre total de pages
+      const totalPages = pageNumber;
+      for (let page = 1; page <= totalPages; page++) {
+        pdf.setPage(page);
         
-        heightLeft -= contentHeight;
+        // Effacer l'ancien footer
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
+        
+        // Ligne de séparation au-dessus du footer
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, pageHeight - footerHeight, pageWidth - margin, pageHeight - footerHeight);
+        
+        // Nouveau footer avec le total
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Page ${page} sur ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
       }
 
       pdf.save(filename);

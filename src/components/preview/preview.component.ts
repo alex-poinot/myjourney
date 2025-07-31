@@ -12,7 +12,7 @@ import { Module } from '../../models/module.interface';
         <h2>Prévisualisation du document</h2>
       </div>
       <div class="preview-content" id="pdf-content">
-        <div *ngFor="let module of sortedModules" class="preview-module">
+        <div *ngFor="let module of sortedModules" class="preview-module" [attr.data-module-type]="module.type">
           
           <!-- Titre -->
           <h1 *ngIf="module.type === 'title' && module.level === 1" 
@@ -101,6 +101,8 @@ import { Module } from '../../models/module.interface';
     }
     .preview-module {
       margin-bottom: 20px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .title-h1 {
       font-size: 32px;
