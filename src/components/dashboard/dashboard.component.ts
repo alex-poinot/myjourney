@@ -241,21 +241,21 @@ interface MissionData {
 
     .dashboard-header h1 {
       margin: 0 0 8px 0;
-      color: #226D68;
+      color: var(--primary-color);
       font-size: 28px;
       font-weight: 700;
     }
 
     .dashboard-header p {
       margin: 0;
-      color: #64748b;
+      color: var(--gray-600);
       font-size: 16px;
     }
       background: rgba(100, 206, 199, 0.2);
       color: #226D68;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-md);
       overflow: hidden;
     }
 
@@ -266,62 +266,62 @@ interface MissionData {
     }
 
     .column-group-header {
-      background: #226D68;
+      background: var(--primary-color);
       color: white;
       padding: 12px 16px;
       font-weight: 600;
       text-align: center;
-      border-bottom: 2px solid #64CEC7;
+      border-bottom: 2px solid var(--secondary-color);
       position: relative;
     }
 
     .column-group-header.information {
-      background: #1a5a56;
+      background: var(--primary-dark);
     }
 
     .column-group-header.avant-mission {
-      background: #226D68;
+      background: var(--primary-color);
     }
 
     .column-group-header.pendant-mission {
-      background: #64CEC7;
-      color: #226D68;
+      background: var(--secondary-color);
+      color: var(--primary-color);
     }
 
     .column-group-header.fin-mission {
-      background: #226D68;
+      background: var(--primary-color);
     }
 
     .column-header {
-      background: #f1f5f9;
-      color: #374151;
+      background: var(--gray-100);
+      color: var(--gray-700);
       padding: 10px 12px;
       font-weight: 600;
       text-align: center;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--gray-200);
       white-space: nowrap;
     }
 
     .column-header.percentage {
-      background: rgba(100, 206, 199, 0.2);
-      color: #226D68;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary-color);
       min-width: 60px;
     }
 
     .group-row {
-      background: #f8fafc;
+      background: var(--gray-50);
       cursor: pointer;
       transition: background-color 0.2s;
     }
 
     .group-row:hover {
-      background: #f1f5f9;
+      background: var(--gray-100);
     }
 
     .group-cell {
       padding: 12px 16px;
       font-weight: 600;
-      color: #226D68;
+      color: var(--primary-color);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -329,17 +329,17 @@ interface MissionData {
 
     .group-summary {
       padding: 12px 16px;
-      color: #64748b;
+      color: var(--gray-600);
       font-style: italic;
     }
 
     .mission-row {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--gray-100);
       transition: all 0.2s;
     }
 
     .mission-row:hover {
-      background: #fefefe;
+      background: var(--gray-50);
     }
 
     .mission-row.hidden {
@@ -348,7 +348,7 @@ interface MissionData {
 
     .mission-indent {
       width: 20px;
-      background: #f8fafc;
+      background: var(--gray-50);
     }
 
     .mission-row td {
@@ -375,28 +375,28 @@ interface MissionData {
     }
 
     .progress-circle[data-percentage="0"] {
-      background: #fee2e2;
-      color: #dc2626;
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
     }
 
     .progress-circle[data-percentage="25"] {
-      background: #fef3c7;
-      color: #d97706;
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
     }
 
     .progress-circle[data-percentage="50"] {
-      background: #fef3c7;
-      color: #d97706;
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
     }
 
     .progress-circle[data-percentage="75"] {
-      background: #dcfce7;
-      color: #16a34a;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
     }
 
     .progress-circle[data-percentage="100"] {
-      background: #dcfce7;
-      color: #16a34a;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
     }
 
     .status-cell {

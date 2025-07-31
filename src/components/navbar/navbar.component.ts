@@ -65,9 +65,9 @@ export interface TabGroup {
       right: 0;
       height: 70px;
       background: white;
-      color: #226D68;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      border-bottom: 2px solid #64CEC7;
+      color: var(--gray-800);
+      box-shadow: var(--shadow-md);
+      border-bottom: 2px solid var(--primary-color);
       z-index: 100;
       display: flex;
       align-items: center;
@@ -86,23 +86,23 @@ export interface TabGroup {
     }
 
     .navbar-brand:hover {
-      background: rgba(100, 206, 199, 0.1);
+      background: rgba(37, 99, 235, 0.05);
     }
 
     .logo {
       font-size: 28px;
-      background: linear-gradient(45deg, #226D68, #64CEC7);
+      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
       border-radius: 8px;
       padding: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-sm);
     }
 
     .brand-title {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       font-size: 20px;
       font-weight: 700;
       margin: 0;
-      background: linear-gradient(45deg, #226D68, #64CEC7);
+      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -131,12 +131,12 @@ export interface TabGroup {
     }
 
     .group-button:hover {
-      background: rgba(100, 206, 199, 0.1);
+      background: rgba(37, 99, 235, 0.05);
     }
 
     .group-button.active {
-      background: rgba(100, 206, 199, 0.2);
-      border: 1px solid #64CEC7;
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid var(--primary-color);
     }
 
     .icon {
@@ -150,7 +150,7 @@ export interface TabGroup {
 
     .expand-icon {
       font-size: 10px;
-      color: #64CEC7;
+      color: var(--primary-color);
       transition: transform 0.2s ease;
     }
 
@@ -160,9 +160,9 @@ export interface TabGroup {
       left: 0;
       min-width: 200px;
       background: white;
-      border: 1px solid #64CEC7;
+      border: 1px solid var(--primary-color);
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-lg);
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
@@ -187,11 +187,11 @@ export interface TabGroup {
     }
 
     .dropdown-item:hover {
-      background: rgba(100, 206, 199, 0.1);
+      background: rgba(37, 99, 235, 0.05);
     }
 
     .dropdown-item.active {
-      background: #226D68;
+      background: var(--primary-color);
       color: white;
       font-weight: 600;
     }
@@ -206,20 +206,20 @@ export interface TabGroup {
     }
 
     .navbar-profile:hover {
-      background: rgba(100, 206, 199, 0.1);
+      background: rgba(37, 99, 235, 0.05);
     }
 
     .profile-photo {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      border: 2px solid #64CEC7;
+      border: 2px solid var(--primary-color);
       object-fit: cover;
     }
 
     .profile-name {
       font-weight: 500;
-      color: #226D68;
+      color: var(--gray-700);
       font-size: 14px;
     }
 
