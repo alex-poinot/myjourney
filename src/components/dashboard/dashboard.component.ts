@@ -833,11 +833,7 @@ export class DashboardComponent implements OnInit {
       }, (error) => {
         console.error('Erreur lors de la récupération des missions :', error);
       });
-  
-      }, (error) => {
-        console.error('Erreur lors de la récupération des missions :', error);
-      });
-    }
+  }
 
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
