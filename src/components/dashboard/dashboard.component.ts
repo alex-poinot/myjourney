@@ -1,8 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 
 interface MissionData {
   numeroGroupe: string;
@@ -34,226 +32,272 @@ interface MissionData {
   };
 }
 
-interface FlatMissionData extends MissionData {
-  // Propriétés calculées pour l'affichage
-  avantMissionTasks: string;
-  pendantMissionTasks: string;
-  finMissionTasks: string;
-  overallProgress: number;
-}
-
-interface GroupedMissionData {
-  groupKey: string;
-  groupName: string;
-  missions: FlatMissionData[];
+interface ClientGroup {
+  numeroClient: string;
+  nomClient: string;
+  missions: MissionData[];
   expanded: boolean;
 }
 
-interface ColumnGroup {
-  name: string;
-  columns: string[];
-  visible: boolean;
+interface GroupData {
+  numeroGroupe: string;
+  nomGroupe: string;
+  clients: ClientGroup[];
+  expanded: boolean;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule, 
-    HttpClientModule,
-    FormsModule,
-    MatPaginatorModule,
-  ],
+  imports: [CommonModule, HttpClientModule],
   template: `
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Tableau de bord des missions</h1>
         <p>Vue d'ensemble de l'avancement de toutes les missions</p>
-        
-        <!-- Contrôles de colonnes -->
-        <div class="column-controls">
-          <h3>Affichage des colonnes :</h3>
-          <div class="column-toggles">
-            <label 
-              *ngFor="let group of columnGroups" 
-              class="column-toggle">
-              <input 
-                type="checkbox"
-                [(ngModel)]="group.visible"
-                (change)="updateDisplayedColumns()">
-              {{ group.name }}
-            </label>
-          </div>
-        </div>
       </div>
 
-      <div class="table-card">
-        <div class="table-header">
-          <h2>Missions ({{ getTotalMissions() }} au total, {{ groupedData.length }} groupes)</h2>
-        </div>
-        
-        <div class="table-container">
-          <table class="mission-table">
-            <thead>
-              <tr>
-                <!-- Colonne Information -->
-                <th *ngIf="isColumnVisible('groupExpander')" class="expander-header">Groupe</th>
-                <th *ngIf="isColumnVisible('numeroGroupe')" class="info-header">N° Groupe</th>
-                <th *ngIf="isColumnVisible('nomGroupe')" class="info-header">Nom Groupe</th>
-                <th *ngIf="isColumnVisible('numeroClient')" class="info-header">N° Client</th>
-                <th *ngIf="isColumnVisible('nomClient')" class="info-header">Nom Client</th>
-                <th *ngIf="isColumnVisible('mission')" class="info-header">Mission</th>
-
-                <!-- Colonnes Avant Mission -->
-                <th *ngIf="isColumnVisible('avantMissionProgress')" class="avant-mission-header">Avant Mission (%)</th>
-                <th *ngIf="isColumnVisible('avantMissionTasks')" class="avant-mission-header">Tâches</th>
-
-                <!-- Colonnes Pendant Mission -->
-                <th *ngIf="isColumnVisible('pendantMissionProgress')" class="pendant-mission-header">Pendant Mission (%)</th>
-                <th *ngIf="isColumnVisible('pendantMissionTasks')" class="pendant-mission-header">Tâches</th>
-
-                <!-- Colonnes Fin Mission -->
-                <th *ngIf="isColumnVisible('finMissionProgress')" class="fin-mission-header">Fin Mission (%)</th>
-                <th *ngIf="isColumnVisible('finMissionTasks')" class="fin-mission-header">Tâches</th>
-
-                <!-- Colonne Progrès Global -->
-                <th *ngIf="isColumnVisible('overallProgress')" class="overall-header">Progrès Global</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let mission of paginatedData" 
-                  [class.group-header-row]="mission.isGroupHeader"
-                  [class.mission-data-row]="!mission.isGroupHeader">
-                
-                <td *ngIf="isColumnVisible('groupExpander')" class="expander-cell">
-                  <button 
-                    *ngIf="mission.isGroupHeader"
-                    (click)="toggleGroup(mission.groupKey)"
-                    class="group-toggle">
-                    {{ getGroupExpanded(mission.groupKey) ? '▲' : '▼' }}
+      <div class="table-container">
+        <table class="mission-table">
+          <thead>
+            <tr>
+              <!--<th rowspan="2" class="group-header">
+                <button class="collapse-btn" (click)="toggleAllGroups()">
+                  {{ allGroupsExpanded ? '▼' : '▶' }}
+                </button>
+              </th>-->
+              <!-- Groupe Information -->
+              <th colspan="5" class="column-group-header information">
+                Information
+              </th>
+              <!-- Groupe Avant la mission -->
+              <th [attr.colspan]="avantMissionCollapsed ? 1 : 6" class="column-group-header avant-mission">
+                <button class="collapse-btn" (click)="toggleColumnGroup('avantMission')">
+                  {{ avantMissionCollapsed ? '▶' : '▼' }}
+                </button>
+                Avant la mission
+              </th>
+              <!-- Groupe Pendant la mission -->
+              <th [attr.colspan]="pendantMissionCollapsed ? 1 : 5" class="column-group-header pendant-mission">
+                <button class="collapse-btn" (click)="toggleColumnGroup('pendantMission')">
+                  {{ pendantMissionCollapsed ? '▶' : '▼' }}
+                </button>
+                Pendant la mission
+              </th>
+              <!-- Groupe Fin de mission -->
+              <th [attr.colspan]="finMissionCollapsed ? 1 : 5" class="column-group-header fin-mission">
+                <button class="collapse-btn" (click)="toggleColumnGroup('finMission')">
+                  {{ finMissionCollapsed ? '▶' : '▼' }}
+                </button>
+                Fin de mission
+              </th>
+            </tr>
+            <tr>
+              <!-- Information columns -->
+              <th class="column-header">N° Groupe</th>
+              <th class="column-header">Nom Groupe</th>
+              <th class="column-header">N° Client</th>
+              <th class="column-header">Nom Client</th>
+              <th class="column-header">Mission</th>
+              
+              <!-- Avant la mission columns -->
+              <th class="column-header percentage">%</th>
+              <th *ngIf="!avantMissionCollapsed" class="column-header">LAB</th>
+              <th *ngIf="!avantMissionCollapsed" class="column-header">Conflit Check</th>
+              <th *ngIf="!avantMissionCollapsed" class="column-header">QAC</th>
+              <th *ngIf="!avantMissionCollapsed" class="column-header">QAM</th>
+              <th *ngIf="!avantMissionCollapsed" class="column-header">LDM</th>
+              
+              <!-- Pendant la mission columns -->
+              <th class="column-header percentage">%</th>
+              <th *ngIf="!pendantMissionCollapsed" class="column-header">NOG</th>
+              <th *ngIf="!pendantMissionCollapsed" class="column-header">Checklist</th>
+              <th *ngIf="!pendantMissionCollapsed" class="column-header">Révision</th>
+              <th *ngIf="!pendantMissionCollapsed" class="column-header">Supervision</th>
+              
+              <!-- Fin de mission columns -->
+              <th class="column-header percentage">%</th>
+              <th *ngIf="!finMissionCollapsed" class="column-header">NDS/CR</th>
+              <th *ngIf="!finMissionCollapsed" class="column-header">QMM</th>
+              <th *ngIf="!finMissionCollapsed" class="column-header">Plaquette</th>
+              <th *ngIf="!finMissionCollapsed" class="column-header">Restitution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let group of groupedData; let groupIndex = index">
+              <!-- Ligne de groupe -->
+              <tr class="group-row main-group" (click)="toggleMainGroup(groupIndex)">
+                <!--<td class="group-cell">
+                  <button class="collapse-btn">
+                    {{ group.expanded ? '▼' : '▶' }}
                   </button>
-                </td>
-
-                <td *ngIf="isColumnVisible('numeroGroupe')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
-                  <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.numeroGroupe }}</span>
-                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroGroupe }}</span>
-                </td>
-
-                <td *ngIf="isColumnVisible('nomGroupe')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
-                  <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.nomGroupe }} ({{ getGroupMissionCount(mission.groupKey) }} missions)</span>
-                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomGroupe }}</span>
-                </td>
-
-                <td *ngIf="isColumnVisible('numeroClient')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
-                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroClient }}</span>
-                </td>
-
-                <td *ngIf="isColumnVisible('nomClient')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
-                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomClient }}</span>
-                </td>
-
-                <td *ngIf="isColumnVisible('mission')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
-                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.mission }}</span>
-                </td>
-
-                <!-- Colonnes Avant Mission -->
-                <td *ngIf="isColumnVisible('avantMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.avantMission.percentage">
-                    {{ mission.avantMission.percentage }}%
+                  <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
+                </td>-->
+                <td colspan="100%" class="group-summary">
+                  <div class="group-cell">
+                    <div class="collapse-btn-container">
+                      <button class="collapse-btn">
+                        {{ group.expanded ? '▼' : '▶' }}
+                      </button>
+                    </div>
+                    <div class="group-info">
+                      <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
+                      {{ getTotalMissionsInGroup(group) }} mission(s) - {{ group.clients.length }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
+                    </div>
                   </div>
                 </td>
-
-                <td *ngIf="isColumnVisible('avantMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
-                    <span class="task-icon" [class.completed]="mission.avantMission.lab" title="LAB">
+              </tr>
+              
+              <!-- Groupes de clients -->
+              <ng-container *ngFor="let client of group.clients; let clientIndex = index">
+                <!-- Ligne de sous-groupe (client) -->
+                <tr class="group-row client-group" 
+                    [class.hidden]="!group.expanded"
+                    (click)="toggleClientGroup(groupIndex, clientIndex)">
+                  <!--<td class="client-indent"></td>-->
+                  <td class="client-cell" colspan="5">
+                    <div class="client-row">
+                      <button class="collapse-btn">
+                        {{ client.expanded ? '▼' : '▶' }}
+                      </button>
+                      <strong>{{ client.numeroClient }} - {{ client.nomClient }}</strong>
+                      <span class="client-summary">({{ client.missions.length }} mission(s))</span>
+                    </div>
+                  </td>
+                  
+                  <!-- Colonnes vides pour l'alignement -->
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="getClientAverage(client, 'avantMission')">
+                      {{ getClientAverage(client, 'avantMission') }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" [attr.colspan]="avantMissionCollapsed ? 0 : 5"></td>
+                  
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="getClientAverage(client, 'pendantMission')">
+                      {{ getClientAverage(client, 'pendantMission') }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!pendantMissionCollapsed" [attr.colspan]="pendantMissionCollapsed ? 0 : 4"></td>
+                  
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="getClientAverage(client, 'finMission')">
+                      {{ getClientAverage(client, 'finMission') }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!finMissionCollapsed" [attr.colspan]="finMissionCollapsed ? 0 : 4"></td>
+                </tr>
+                
+                <!-- Missions du client -->
+                <tr *ngFor="let mission of client.missions" 
+                    class="mission-row" 
+                    [class.hidden]="!group.expanded || !client.expanded">
+                  <!--<td class="mission-indent"></td>-->
+                  
+                  <!-- Information -->
+                  <td>{{ mission.numeroGroupe }}</td>
+                  <td>{{ mission.nomGroupe }}</td>
+                  <td>{{ mission.numeroClient }}</td>
+                  <td>{{ mission.nomClient }}</td>
+                  <td>{{ mission.mission }}</td>
+                  
+                  <!-- Avant la mission -->
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="mission.avantMission.percentage">
+                      {{ mission.avantMission.percentage }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.avantMission.lab">
                       {{ mission.avantMission.lab ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.avantMission.conflitCheck" title="Conflit Check">
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.avantMission.conflitCheck">
                       {{ mission.avantMission.conflitCheck ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.avantMission.qac" title="QAC">
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.avantMission.qac">
                       {{ mission.avantMission.qac ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.avantMission.qam" title="QAM">
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.avantMission.qam">
                       {{ mission.avantMission.qam ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.avantMission.ldm" title="LDM">
+                  </td>
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.avantMission.ldm">
                       {{ mission.avantMission.ldm ? '✅' : '⏳' }}
                     </span>
-                  </div>
-                </td>
-
-                <!-- Colonnes Pendant Mission -->
-                <td *ngIf="isColumnVisible('pendantMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.pendantMission.percentage">
-                    {{ mission.pendantMission.percentage }}%
-                  </div>
-                </td>
-
-                <td *ngIf="isColumnVisible('pendantMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
-                    <span class="task-icon" [class.completed]="mission.pendantMission.nog" title="NOG">
+                  </td>
+                  
+                  <!-- Pendant la mission -->
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="mission.pendantMission.percentage">
+                      {{ mission.pendantMission.percentage }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.pendantMission.nog">
                       {{ mission.pendantMission.nog ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.pendantMission.checklist" title="Checklist">
+                  </td>
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.pendantMission.checklist">
                       {{ mission.pendantMission.checklist ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.pendantMission.revision" title="Révision">
+                  </td>
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.pendantMission.revision">
                       {{ mission.pendantMission.revision ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.pendantMission.supervision" title="Supervision">
+                  </td>
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.pendantMission.supervision">
                       {{ mission.pendantMission.supervision ? '✅' : '⏳' }}
                     </span>
-                  </div>
-                </td>
-
-                <!-- Colonnes Fin Mission -->
-                <td *ngIf="isColumnVisible('finMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.finMission.percentage">
-                    {{ mission.finMission.percentage }}%
-                  </div>
-                </td>
-
-                <td *ngIf="isColumnVisible('finMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
-                    <span class="task-icon" [class.completed]="mission.finMission.ndsCr" title="NDS/CR">
+                  </td>
+                  
+                  <!-- Fin de mission -->
+                  <td class="percentage-cell">
+                    <div class="progress-circle" [attr.data-percentage]="mission.finMission.percentage">
+                      {{ mission.finMission.percentage }}%
+                    </div>
+                  </td>
+                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.finMission.ndsCr">
                       {{ mission.finMission.ndsCr ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.finMission.qmm" title="QMM">
+                  </td>
+                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.finMission.qmm">
                       {{ mission.finMission.qmm ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.finMission.plaquette" title="Plaquette">
+                  </td>
+                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.finMission.plaquette">
                       {{ mission.finMission.plaquette ? '✅' : '⏳' }}
                     </span>
-                    <span class="task-icon" [class.completed]="mission.finMission.restitution" title="Restitution">
+                  </td>
+                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                    <span class="status-icon" [class.completed]="mission.finMission.restitution">
                       {{ mission.finMission.restitution ? '✅' : '⏳' }}
                     </span>
-                  </div>
-                </td>
-
-                <!-- Colonne Progrès Global -->
-                <td *ngIf="isColumnVisible('overallProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
-                  <div *ngIf="!mission.isGroupHeader" class="progress-circle large" [attr.data-percentage]="mission.overallProgress">
-                    {{ mission.overallProgress }}%
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <mat-paginator 
-          [length]="flatData.length"
-          [pageSize]="pageSize"
-          [pageSizeOptions]="[25, 50, 100]"
-          (page)="onPageChange($event)"
-          showFirstLastButtons
-          aria-label="Sélectionner la page des missions">
-        </mat-paginator>
+                  </td>
+                </tr>
+              </ng-container>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
     </div>
   `,
   styles: [`
+    .hidden {
+      display: none;
+    }
     .dashboard-container {
       padding: 24px;
       background: #f8fafc;
@@ -276,187 +320,145 @@ interface ColumnGroup {
       color: var(--gray-600);
       font-size: 16px;
     }
-
-    .column-controls {
+      background: rgba(100, 206, 199, 0.2);
+      color: #226D68;
       background: white;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid var(--gray-200);
-      margin-bottom: 16px;
-    }
-
-    .column-controls h3 {
-      margin: 0 0 12px 0;
-      font-size: 16px;
-      color: var(--gray-700);
-    }
-
-    .column-toggles {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .column-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--gray-700);
-    }
-
-    .column-toggle input[type="checkbox"] {
-      margin: 0;
-    }
-
-    .table-card {
-      background: white;
-      border-radius: 8px;
-      border: 1px solid var(--gray-200);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .table-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--gray-200);
-      background: var(--gray-50);
-      border-radius: 8px 8px 0 0;
-    }
-
-    .table-header h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--gray-800);
-    }
-
-    .table-container {
-      overflow: auto;
-      max-height: 600px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
     }
 
     .mission-table {
       width: 100%;
-      background: white;
       border-collapse: collapse;
-    }
-
-    .mission-table th,
-    .mission-table td {
-      padding: 12px;
-      border-bottom: 1px solid var(--gray-100);
       font-size: 14px;
-      text-align: left;
     }
 
-    /* Headers avec couleurs par section */
-    .expander-header {
-      background: var(--gray-800) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-      width: 60px !important;
-      border-right: 1px solid rgba(255,255,255,0.2);
+    .column-group-header {
+      background: var(--primary-color);
+      color: white;
+      padding: 12px 16px;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 2px solid var(--secondary-color);
+      position: relative;
     }
 
-    .expander-cell {
-      width: 60px !important;
-      text-align: center !important;
-      padding: 8px !important;
+    .group-cell {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
-    .group-toggle {
-      background: none;
-      border: none;
+    .client-row {
+      padding-left: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .column-group-header.information {
+      background: var(--primary-dark);
+    }
+
+    .column-group-header.avant-mission {
+      background: var(--primary-color);
+    }
+
+    .column-group-header.pendant-mission {
+      background: var(--secondary-color);
       color: var(--primary-color);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background 0.2s;
     }
 
-    .group-toggle:hover {
+    .column-group-header.fin-mission {
+      background: var(--primary-color);
+    }
+
+    .column-header {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      padding: 10px 12px;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+
+    .column-header.percentage {
       background: rgba(34, 109, 104, 0.1);
+      color: var(--primary-color);
+      min-width: 60px;
     }
 
-    .info-header {
-      background: var(--primary-dark) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .avant-mission-header {
-      background: var(--primary-color) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .pendant-mission-header {
-      background: var(--secondary-color) !important;
-      color: var(--primary-color) !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-      border-right: 1px solid rgba(34, 109, 104, 0.2);
-    }
-
-    .fin-mission-header {
-      background: var(--primary-color) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .overall-header {
-      background: var(--primary-dark) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      padding: 16px 12px !important;
-    }
-
-    .mission-data-row:hover {
+    .group-row.main-group {
       background: var(--gray-50);
-    }
-
-    /* Styles pour les groupes */
-    .group-header-row {
-      background: var(--primary-light);
+      cursor: pointer;
+      transition: background-color 0.2s;
       font-weight: 600;
     }
 
-    .group-header-row:hover {
-      background: rgba(100, 206, 199, 0.3);
+    .group-row.main-group:hover {
+      background: var(--gray-100);
     }
 
-    .group-header {
-      background: var(--primary-light);
-      font-weight: 600;
-      color: var(--primary-dark);
+    .group-row.client-group {
+      background: rgba(100, 206, 199, 0.1);
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .group-header-text {
-      font-weight: 700;
-      font-size: 15px;
+    .group-row.client-group:hover {
+      background: rgba(100, 206, 199, 0.2);
+    }
+
+    .client-indent {
+      width: 40px;
+      background: rgba(100, 206, 199, 0.1);
+    }
+
+    .client-cell {
+      padding: 10px 16px;
+      font-weight: 500;
+      color: var(--secondary-color);
+    }
+
+    .client-summary {
+      font-size: 12px;
+      color: var(--gray-600);
+      font-weight: normal;
+      margin-left: 8px;
+    }
+    .group-summary {
+      padding: 12px 16px;
+      color: var(--gray-600);
+      font-style: italic;
     }
 
     .mission-row {
-      background: white;
+      border-bottom: 1px solid var(--gray-100);
+      transition: all 0.2s;
+    }
+
+    .mission-row:hover {
+      background: var(--gray-50);
+    }
+
+    .mission-row.hidden {
+      display: none;
     }
 
     .mission-indent {
-      margin-left: 20px;
-      font-size: 13px;
+      width: 60px;
+      background: var(--gray-50);
+    }
+
+    .mission-row td {
+      padding: 10px 12px;
+      text-align: center;
+      vertical-align: middle;
     }
 
     .percentage-cell {
-      text-align: center;
-      padding: 8px;
+      padding: 8px !important;
     }
 
     .progress-circle {
@@ -470,12 +472,6 @@ interface ColumnGroup {
       font-size: 11px;
       margin: 0 auto;
       position: relative;
-    }
-
-    .progress-circle.large {
-      width: 50px;
-      height: 50px;
-      font-size: 12px;
     }
 
     .progress-circle[data-percentage="0"] {
@@ -503,39 +499,42 @@ interface ColumnGroup {
       color: var(--success-color);
     }
 
-    .tasks-cell {
-      text-align: center;
-      padding: 8px;
+    .status-cell {
+      padding: 8px !important;
     }
 
-    .task-icons {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .task-icon {
-      font-size: 14px;
+    .status-icon {
+      font-size: 16px;
       display: inline-block;
-      cursor: help;
     }
 
-    /* Pagination */
-    ::ng-deep mat-paginator {
-      border-top: 1px solid var(--gray-200);
-      background: var(--gray-50);
+    .collapse-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
     }
 
-    /* Responsive */
-    @media (max-width: 1400px) {
-      .task-icons {
-        flex-direction: column;
-        gap: 2px;
+    .collapse-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .column-group-header .collapse-btn {
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1200px) {
+      .mission-table {
+        font-size: 12px;
       }
       
-      .task-icon {
-        font-size: 12px;
+      .column-header,
+      .mission-row td {
+        padding: 8px 6px;
       }
       
       .progress-circle {
@@ -544,367 +543,139 @@ interface ColumnGroup {
         font-size: 10px;
       }
     }
-
-    @media (max-width: 1200px) {
-      .dashboard-container {
-        padding: 16px;
-      }
-      
-      .mission-table th,
-      .mission-table td {
-        padding: 8px;
-        font-size: 12px;
-      }
-      
-      .info-header,
-      .avant-mission-header,
-      .pendant-mission-header,
-      .fin-mission-header,
-      .overall-header {
-        padding: 12px 8px;
-        font-size: 12px;
-      }
-
-      .column-toggles {
-        flex-direction: column;
-        gap: 8px;
-      }
-    }
   `]
 })
 export class DashboardComponent implements OnInit {
-  columnGroups: ColumnGroup[] = [
-    {
-      name: 'Information',
-      columns: ['groupExpander', 'numeroGroupe', 'nomGroupe', 'numeroClient', 'nomClient', 'mission'],
-      visible: true
-    },
-    {
-      name: 'Avant Mission',
-      columns: ['avantMissionProgress', 'avantMissionTasks'],
-      visible: true
-    },
-    {
-      name: 'Pendant Mission',
-      columns: ['pendantMissionProgress', 'pendantMissionTasks'],
-      visible: true
-    },
-    {
-      name: 'Fin Mission',
-      columns: ['finMissionProgress', 'finMissionTasks'],
-      visible: true
-    },
-    {
-      name: 'Progrès Global',
-      columns: ['overallProgress'],
-      visible: true
-    }
-  ];
+  avantMissionCollapsed = false;
+  pendantMissionCollapsed = false;
+  finMissionCollapsed = false;
+  allGroupsExpanded = true;
 
-  flatData: any[] = [];
-  paginatedData: any[] = [];
-  groupedData: GroupedMissionData[] = [];
-  expandedGroups: Set<string> = new Set();
-  
-  // Pagination
-  currentPage = 0;
-  pageSize = 50;
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  groupedData: GroupData[] = [];
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    // this.initializeMockData();
     this.initializeDataFromApi();
   }
 
-  updateDisplayedColumns(): void {
-    this.updatePaginatedData();
-  }
-
   initializeDataFromApi(): void {
-    // Commenté temporairement l'appel API pour utiliser des données de test
-    // this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-    //   .subscribe((response) => {
-    //     let data = response.data;
-    //     const missions: MissionData[] = data;
-    //     console.log('Missions récupérées:', missions);
-    //     this.processData(missions);
-    //   }, (error) => {
-    //     console.error('Erreur lors de la récupération des missions :', error);
-    //   });
+    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
+      .subscribe((response) => {
+        let data = response.data;
+        
+        const missions: MissionData[] = data;
 
-    // Utilisation des données de test
-    const testData: MissionData[] = [
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436284",
-        "nomClient": "Bpifrance Capital Régions 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      },
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436296",
-        "nomClient": "BPIFRANCE DIGITAL VENTURE 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      },
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436298",
-        "nomClient": "FRENCH TOUCH CAPITAL 1",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      },
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436367",
-        "nomClient": "BPIFRANCE MID CAP EQUITY 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      },
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436388",
-        "nomClient": "BPIFRANCE MID CAP FBI 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      }
-    ];
+        console.log('Missions récupérées:', missions);
 
-    console.log('Missions de test utilisées:', testData);
-    this.processData(testData);
-  }
 
-  private processData(missions: MissionData[]): void {
-    const flatData: FlatMissionData[] = missions.map(mission => ({
-      ...mission,
-      avantMissionTasks: this.getTasksSummary(mission.avantMission),
-      pendantMissionTasks: this.getTasksSummary(mission.pendantMission),
-      finMissionTasks: this.getTasksSummary(mission.finMission),
-      overallProgress: Math.round(
-        (mission.avantMission.percentage + mission.pendantMission.percentage + mission.finMission.percentage) / 3
-      )
-    }));
+        // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
+        const groupedByGroupe = missions.reduce((acc, mission) => {
+          const groupKey = mission.numeroGroupe;
+          if (!acc[groupKey]) {
+            acc[groupKey] = {
+              numeroGroupe: mission.numeroGroupe,
+              nomGroupe: mission.nomGroupe,
+              missions: []
+            };
+          }
+          acc[groupKey].missions.push(mission);
+          return acc;
+        }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
 
-    this.createGroupedData(flatData);
-    this.updateFlatData();
-    this.updatePaginatedData();
-  }
+        // Créer la structure finale avec double groupement
+        this.groupedData = Object.values(groupedByGroupe).map(group => {
+          // Grouper les missions par numeroClient
+          const clientGroups = group.missions.reduce((acc, mission) => {
+            const clientKey = mission.numeroClient;
+            if (!acc[clientKey]) {
+              acc[clientKey] = {
+                numeroClient: mission.numeroClient,
+                nomClient: mission.nomClient,
+                missions: [],
+                expanded: true
+              };
+            }
+            acc[clientKey].missions.push(mission);
+            return acc;
+          }, {} as { [key: string]: ClientGroup });
 
-  private createGroupedData(missions: FlatMissionData[]): void {
-    const groups = new Map<string, FlatMissionData[]>();
-    
-    missions.forEach(mission => {
-      const groupKey = `${mission.numeroGroupe}-${mission.nomGroupe}`;
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, []);
-      }
-      groups.get(groupKey)!.push(mission);
-    });
-
-    this.groupedData = Array.from(groups.entries()).map(([groupKey, groupMissions]) => ({
-      groupKey,
-      groupName: groupMissions[0].nomGroupe,
-      missions: groupMissions,
-      expanded: this.expandedGroups.has(groupKey)
-    }));
-
-    // Expand all groups by default
-    this.groupedData.forEach(group => {
-      this.expandedGroups.add(group.groupKey);
-      group.expanded = true;
-    });
-  }
-
-  private updateFlatData(): void {
-    this.flatData = [];
-    
-    this.groupedData.forEach(group => {
-      // Add group header
-      const groupHeader = {
-        ...group.missions[0],
-        isGroupHeader: true,
-        groupKey: group.groupKey
-      };
-      this.flatData.push(groupHeader);
-      
-      // Add missions if group is expanded
-      if (group.expanded) {
-        group.missions.forEach(mission => {
-          this.flatData.push({
-            ...mission,
-            isGroupHeader: false,
-            groupKey: group.groupKey
-          });
+          return {
+            numeroGroupe: group.numeroGroupe,
+            nomGroupe: group.nomGroupe,
+            clients: Object.values(clientGroups),
+            expanded: true
+          };
         });
-      }
-    });
+
+      }, (error) => {
+        console.error('Erreur lors de la récupération des missions :', error);
+      });
   }
 
-  private updatePaginatedData(): void {
-    const startIndex = this.currentPage * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedData = this.flatData.slice(startIndex, endIndex);
-  }
-
-  onPageChange(event: any): void {
-    this.currentPage = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.updatePaginatedData();
-  }
-
-  toggleGroup(groupKey: string): void {
-    if (this.expandedGroups.has(groupKey)) {
-      this.expandedGroups.delete(groupKey);
-    } else {
-      this.expandedGroups.add(groupKey);
+  toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
+    switch (group) {
+      case 'avantMission':
+        this.avantMissionCollapsed = !this.avantMissionCollapsed;
+        break;
+      case 'pendantMission':
+        this.pendantMissionCollapsed = !this.pendantMissionCollapsed;
+        break;
+      case 'finMission':
+        this.finMissionCollapsed = !this.finMissionCollapsed;
+        break;
     }
+  }
+
+  toggleMainGroup(index: number): void {
+    this.groupedData[index].expanded = !this.groupedData[index].expanded;
     
-    // Update grouped data
-    this.groupedData.forEach(group => {
-      if (group.groupKey === groupKey) {
-        group.expanded = this.expandedGroups.has(groupKey);
-      }
+    // Quand on ouvre/ferme le groupe, synchroniser tous les clients avec l'état du groupe
+    this.groupedData[index].clients.forEach(client => {
+      client.expanded = this.groupedData[index].expanded;
     });
+  }
+
+  toggleClientGroup(groupIndex: number, clientIndex: number): void {
+    this.groupedData[groupIndex].clients[clientIndex].expanded = 
+      !this.groupedData[groupIndex].clients[clientIndex].expanded;
+  }
+
+  toggleAllGroups(): void {
+    this.allGroupsExpanded = !this.allGroupsExpanded;
+    this.groupedData.forEach(group => {
+      group.expanded = this.allGroupsExpanded;
+      group.clients.forEach(client => {
+        client.expanded = this.allGroupsExpanded;
+      });
+    });
+  }
+
+  getTotalMissionsInGroup(group: GroupData): number {
+    return group.clients.reduce((total, client) => total + client.missions.length, 0);
+  }
+
+  getMainGroupAverage(group: GroupData): number {
+    const allMissions = group.clients.flatMap(client => client.missions);
+    if (allMissions.length === 0) return 0;
     
-    this.updateFlatData();
-    this.updatePaginatedData();
+    const total = allMissions.reduce((sum, mission) => {
+      const avg = (mission.avantMission.percentage + mission.pendantMission.percentage + mission.finMission.percentage) / 3;
+      return sum + avg;
+    }, 0);
+    
+    return Math.round(total / allMissions.length);
   }
 
-  getGroupExpanded(groupKey: string): boolean {
-    return this.expandedGroups.has(groupKey);
-  }
-
-  getGroupMissionCount(groupKey: string): number {
-    const group = this.groupedData.find(g => g.groupKey === groupKey);
-    return group ? group.missions.length : 0;
-  }
-
-  getTotalMissions(): number {
-    return this.groupedData.reduce((total, group) => total + group.missions.length, 0);
-  }
-
-  isColumnVisible(columnName: string): boolean {
-    return this.columnGroups.some(group => 
-      group.visible && group.columns.includes(columnName)
-    );
-  }
-
-  private getTasksSummary(phase: any): string {
-    const tasks = Object.keys(phase).filter(key => key !== 'percentage');
-    const completedTasks = tasks.filter(task => phase[task]).length;
-    return `${completedTasks}/${tasks.length}`;
+  getClientAverage(client: ClientGroup, phase: 'avantMission' | 'pendantMission' | 'finMission'): number {
+    if (client.missions.length === 0) return 0;
+    
+    const total = client.missions.reduce((sum, mission) => {
+      return sum + mission[phase].percentage;
+    }, 0);
+    
+    return Math.round(total / client.missions.length);
   }
 }
