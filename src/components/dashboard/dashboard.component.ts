@@ -780,81 +780,59 @@ export class DashboardComponent implements OnInit {
     //     "numeroClient": "436285",
     //     "nomClient": "Bpifrance Capital Régions 3",
     //     "mission": "Mission EC",
-    //     "avantMission": {
-    //       "percentage": 75,
-    //       "lab": true,
-    //       "conflitCheck": true,
-    //       "qac": true,
-    //       "qam": false,
-    //       "ldm": false
-    //     },
-    //     "pendantMission": {
-    //       "percentage": 25,
-    //       "nog": true,
-    //       "checklist": false,
-    //       "revision": false,
-    //       "supervision": false
-    //     },
-    //     "finMission": {
-    //       "percentage": 0,
-    //       "ndsCr": false,
-    //       "qmm": false,
-    //       "plaquette": false,
-    //       "restitution": false
-    //     }
-    //   }
-    //   // ... (ajoutez ici toutes les autres données que vous avez fournies)
-    // ];
-
     this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
       .subscribe((response) => {
         let data = response.data;
         
         const realData: MissionData[] = data;
 
-    // Grouper d'abord par numeroGroupe, puis par numeroClient
-    const groupedByGroupe = realData.reduce((acc, mission) => {
-      const groupKey = mission.numeroGroupe;
-      if (!acc[groupKey]) {
-        acc[groupKey] = {
-          numeroGroupe: mission.numeroGroupe,
-          nomGroupe: mission.nomGroupe,
-          missions: []
-        };
-      }
-      acc[groupKey].missions.push(mission);
-      return acc;
-    }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
-
-      // Créer la structure finale avec double groupement
-      this.groupedData = Object.values(groupedByGroupe).map(group => {
-        // Grouper les missions par numeroClient
-        const clientGroups = group.missions.reduce((acc, mission) => {
-          const clientKey = mission.numeroClient;
-          if (!acc[clientKey]) {
-            acc[clientKey] = {
-              numeroClient: mission.numeroClient,
-              nomClient: mission.nomClient,
-              missions: [],
-              expanded: true
+        // Grouper d'abord par numeroGroupe, puis par numeroClient
+        const groupedByGroupe = realData.reduce((acc, mission) => {
+          const groupKey = mission.numeroGroupe;
+          if (!acc[groupKey]) {
+            acc[groupKey] = {
+              numeroGroupe: mission.numeroGroupe,
+              nomGroupe: mission.nomGroupe,
+              missions: []
             };
           }
-          acc[clientKey].missions.push(mission);
+          acc[groupKey].missions.push(mission);
           return acc;
-        }, {} as { [key: string]: ClientGroup });
+        }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
 
-        return {
-          numeroGroupe: group.numeroGroupe,
-          nomGroupe: group.nomGroupe,
-          clients: Object.values(clientGroups),
-          expanded: true
-        };
+        // Créer la structure finale avec double groupement
+        this.groupedData = Object.values(groupedByGroupe).map(group => {
+          // Grouper les missions par numeroClient
+          const clientGroups = group.missions.reduce((acc, mission) => {
+            const clientKey = mission.numeroClient;
+            if (!acc[clientKey]) {
+              acc[clientKey] = {
+                numeroClient: mission.numeroClient,
+                nomClient: mission.nomClient,
+                missions: [],
+                expanded: true
+              };
+            }
+            acc[clientKey].missions.push(mission);
+            return acc;
+          }, {} as { [key: string]: ClientGroup });
+
+          return {
+            numeroGroupe: group.numeroGroupe,
+            nomGroupe: group.nomGroupe,
+            clients: Object.values(clientGroups),
+            expanded: true
+          };
+        });
+
+        this.totalMissions = this.groupedData.reduce((total, group) => 
+          total + group.clients.reduce((clientTotal, client) => 
+            clientTotal + client.missions.length, 0), 0);
+        
+        this.updatePagination();
+      }, (error) => {
+        console.error('Erreur lors de la récupération des missions :', error);
       });
-
-    this.totalMissions = this.groupedData.reduce((total, group) => 
-      total + group.clients.reduce((clientTotal, client) => 
-        clientTotal + client.missions.length, 0), 0);
   
       }, (error) => {
         console.error('Erreur lors de la récupération des missions :', error);
