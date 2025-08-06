@@ -729,8 +729,9 @@ export class DashboardComponent implements OnInit {
 
   groupedData: GroupData[] = [];
   paginatedData: GroupData[] = [];
+  allMissions: MissionData[] = [];
   currentPage = 1;
-  itemsPerPage = 50;
+  itemsPerPage = 10;
   totalMissions = 0;
   totalPages = 0;
   startIndex = 0;
@@ -829,6 +830,11 @@ export class DashboardComponent implements OnInit {
           total + group.clients.reduce((clientTotal, client) => 
             clientTotal + client.missions.length, 0), 0);
         
+        // Créer une liste plate de toutes les missions pour la pagination
+        this.allMissions = this.groupedData.flatMap(group => 
+          group.clients.flatMap(client => client.missions)
+        );
+        
         this.updatePagination();
       }, (error) => {
         console.error('Erreur lors de la récupération des missions :', error);
@@ -836,11 +842,49 @@ export class DashboardComponent implements OnInit {
   }
 
   private updatePagination(): void {
-    this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
+    this.totalPages = Math.ceil(this.totalMissions / this.itemsPerPage);
     this.startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.endIndex = Math.min(this.startIndex + this.itemsPerPage, this.groupedData.length);
+    this.endIndex = Math.min(this.startIndex + this.itemsPerPage, this.totalMissions);
     
-    this.paginatedData = this.groupedData.slice(this.startIndex, this.endIndex);
+    // Obtenir les missions paginées
+    const paginatedMissions = this.allMissions.slice(this.startIndex, this.endIndex);
+    
+    // Reconstruire la structure groupée avec seulement les missions paginées
+    const groupedPaginated = new Map<string, GroupData>();
+    
+    paginatedMissions.forEach(mission => {
+      const groupKey = mission.numeroGroupe;
+      const clientKey = mission.numeroClient;
+      
+      if (!groupedPaginated.has(groupKey)) {
+        groupedPaginated.set(groupKey, {
+          numeroGroupe: mission.numeroGroupe,
+          nomGroupe: mission.nomGroupe,
+          clients: new Map<string, ClientGroup>(),
+          expanded: true
+        } as any);
+      }
+      
+      const group = groupedPaginated.get(groupKey)!;
+      const clientsMap = group.clients as any;
+      
+      if (!clientsMap.has(clientKey)) {
+        clientsMap.set(clientKey, {
+          numeroClient: mission.numeroClient,
+          nomClient: mission.nomClient,
+          missions: [],
+          expanded: true
+        });
+      }
+      
+      clientsMap.get(clientKey).missions.push(mission);
+    });
+    
+    // Convertir les Maps en arrays
+    this.paginatedData = Array.from(groupedPaginated.values()).map(group => ({
+      ...group,
+      clients: Array.from((group.clients as any).values())
+    }));
   }
 
   goToPage(page: number): void {
