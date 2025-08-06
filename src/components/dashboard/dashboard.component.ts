@@ -561,58 +561,250 @@ export class DashboardComponent implements OnInit {
   }
 
   initializeDataFromApi(): void {
-    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
-      .subscribe((response) => {
-        let data = response.data;
-        
-        const missions: MissionData[] = data;
+    // Commenté temporairement l'appel API pour utiliser des données de test
+    // this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+    // // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
+    //   .subscribe((response) => {
+    //     let data = response.data;
+    //     
+    //     const missions: MissionData[] = data;
 
-        console.log('Missions récupérées:', missions);
+    //     console.log('Missions récupérées:', missions);
 
 
-        // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
-        const groupedByGroupe = missions.reduce((acc, mission) => {
-          const groupKey = mission.numeroGroupe;
-          if (!acc[groupKey]) {
-            acc[groupKey] = {
-              numeroGroupe: mission.numeroGroupe,
-              nomGroupe: mission.nomGroupe,
-              missions: []
-            };
-          }
-          acc[groupKey].missions.push(mission);
-          return acc;
-        }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
+    //     // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
+    //     const groupedByGroupe = missions.reduce((acc, mission) => {
+    //       const groupKey = mission.numeroGroupe;
+    //       if (!acc[groupKey]) {
+    //         acc[groupKey] = {
+    //           numeroGroupe: mission.numeroGroupe,
+    //           nomGroupe: mission.nomGroupe,
+    //           missions: []
+    //         };
+    //       }
+    //       acc[groupKey].missions.push(mission);
+    //       return acc;
+    //     }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
 
-        // Créer la structure finale avec double groupement
-        this.groupedData = Object.values(groupedByGroupe).map(group => {
-          // Grouper les missions par numeroClient
-          const clientGroups = group.missions.reduce((acc, mission) => {
-            const clientKey = mission.numeroClient;
-            if (!acc[clientKey]) {
-              acc[clientKey] = {
-                numeroClient: mission.numeroClient,
-                nomClient: mission.nomClient,
-                missions: [],
-                expanded: true
-              };
-            }
-            acc[clientKey].missions.push(mission);
-            return acc;
-          }, {} as { [key: string]: ClientGroup });
+    //     // Créer la structure finale avec double groupement
+    //     this.groupedData = Object.values(groupedByGroupe).map(group => {
+    //       // Grouper les missions par numeroClient
+    //       const clientGroups = group.missions.reduce((acc, mission) => {
+    //         const clientKey = mission.numeroClient;
+    //         if (!acc[clientKey]) {
+    //           acc[clientKey] = {
+    //             numeroClient: mission.numeroClient,
+    //             nomClient: mission.nomClient,
+    //             missions: [],
+    //             expanded: true
+    //           };
+    //         }
+    //         acc[clientKey].missions.push(mission);
+    //         return acc;
+    //       }, {} as { [key: string]: ClientGroup });
 
-          return {
-            numeroGroupe: group.numeroGroupe,
-            nomGroupe: group.nomGroupe,
-            clients: Object.values(clientGroups),
+    //       return {
+    //         numeroGroupe: group.numeroGroupe,
+    //         nomGroupe: group.nomGroupe,
+    //         clients: Object.values(clientGroups),
+    //         expanded: true
+    //       };
+    //     });
+
+    //   }, (error) => {
+    //     console.error('Erreur lors de la récupération des missions :', error);
+    //   });
+
+    // Utilisation des données de test
+    const testData: MissionData[] = [
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436284",
+        "nomClient": "Bpifrance Capital Régions 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      },
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436296",
+        "nomClient": "BPIFRANCE DIGITAL VENTURE 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      },
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436298",
+        "nomClient": "FRENCH TOUCH CAPITAL 1",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      },
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436367",
+        "nomClient": "BPIFRANCE MID CAP EQUITY 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      },
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436388",
+        "nomClient": "BPIFRANCE MID CAP FBI 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      }
+    ];
+
+    const missions: MissionData[] = testData;
+    console.log('Missions de test utilisées:', missions);
+
+    // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
+    const groupedByGroupe = missions.reduce((acc, mission) => {
+      const groupKey = mission.numeroGroupe;
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          numeroGroupe: mission.numeroGroupe,
+          nomGroupe: mission.nomGroupe,
+          missions: []
+        };
+      }
+      acc[groupKey].missions.push(mission);
+      return acc;
+    }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
+
+    // Créer la structure finale avec double groupement
+    this.groupedData = Object.values(groupedByGroupe).map(group => {
+      // Grouper les missions par numeroClient
+      const clientGroups = group.missions.reduce((acc, mission) => {
+        const clientKey = mission.numeroClient;
+        if (!acc[clientKey]) {
+          acc[clientKey] = {
+            numeroClient: mission.numeroClient,
+            nomClient: mission.nomClient,
+            missions: [],
             expanded: true
           };
-        });
+        }
+        acc[clientKey].missions.push(mission);
+        return acc;
+      }, {} as { [key: string]: ClientGroup });
 
-      }, (error) => {
-        console.error('Erreur lors de la récupération des missions :', error);
-      });
+      return {
+        numeroGroupe: group.numeroGroupe,
+        nomGroupe: group.nomGroupe,
+        clients: Object.values(clientGroups),
+        expanded: true
+      };
+    });
   }
 
   toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
