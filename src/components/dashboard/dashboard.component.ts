@@ -744,67 +744,74 @@ export class DashboardComponent implements OnInit {
   }
 
   initializeData(): void {
-    const realData: MissionData[] = [
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436284",
-        "nomClient": "Bpifrance Capital Régions 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      },
-      {
-        "numeroGroupe": "114629",
-        "nomGroupe": "Bpifrance Investissement",
-        "numeroClient": "436285",
-        "nomClient": "Bpifrance Capital Régions 3",
-        "mission": "Mission EC",
-        "avantMission": {
-          "percentage": 75,
-          "lab": true,
-          "conflitCheck": true,
-          "qac": true,
-          "qam": false,
-          "ldm": false
-        },
-        "pendantMission": {
-          "percentage": 25,
-          "nog": true,
-          "checklist": false,
-          "revision": false,
-          "supervision": false
-        },
-        "finMission": {
-          "percentage": 0,
-          "ndsCr": false,
-          "qmm": false,
-          "plaquette": false,
-          "restitution": false
-        }
-      }
-      // ... (ajoutez ici toutes les autres données que vous avez fournies)
-    ];
+    // const realData: MissionData[] = [
+    //   {
+    //     "numeroGroupe": "114629",
+    //     "nomGroupe": "Bpifrance Investissement",
+    //     "numeroClient": "436284",
+    //     "nomClient": "Bpifrance Capital Régions 3",
+    //     "mission": "Mission EC",
+    //     "avantMission": {
+    //       "percentage": 75,
+    //       "lab": true,
+    //       "conflitCheck": true,
+    //       "qac": true,
+    //       "qam": false,
+    //       "ldm": false
+    //     },
+    //     "pendantMission": {
+    //       "percentage": 25,
+    //       "nog": true,
+    //       "checklist": false,
+    //       "revision": false,
+    //       "supervision": false
+    //     },
+    //     "finMission": {
+    //       "percentage": 0,
+    //       "ndsCr": false,
+    //       "qmm": false,
+    //       "plaquette": false,
+    //       "restitution": false
+    //     }
+    //   },
+    //   {
+    //     "numeroGroupe": "114629",
+    //     "nomGroupe": "Bpifrance Investissement",
+    //     "numeroClient": "436285",
+    //     "nomClient": "Bpifrance Capital Régions 3",
+    //     "mission": "Mission EC",
+    //     "avantMission": {
+    //       "percentage": 75,
+    //       "lab": true,
+    //       "conflitCheck": true,
+    //       "qac": true,
+    //       "qam": false,
+    //       "ldm": false
+    //     },
+    //     "pendantMission": {
+    //       "percentage": 25,
+    //       "nog": true,
+    //       "checklist": false,
+    //       "revision": false,
+    //       "supervision": false
+    //     },
+    //     "finMission": {
+    //       "percentage": 0,
+    //       "ndsCr": false,
+    //       "qmm": false,
+    //       "plaquette": false,
+    //       "restitution": false
+    //     }
+    //   }
+    //   // ... (ajoutez ici toutes les autres données que vous avez fournies)
+    // ];
+
+    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
+      .subscribe((response) => {
+        let data = response.data;
+        
+        const missions: MissionData[] = data;
 
     // Grouper d'abord par numeroGroupe, puis par numeroClient
     const groupedByGroupe = realData.reduce((acc, mission) => {
@@ -848,7 +855,11 @@ export class DashboardComponent implements OnInit {
     this.totalMissions = this.groupedData.reduce((total, group) => 
       total + group.clients.reduce((clientTotal, client) => 
         clientTotal + client.missions.length, 0), 0);
-  }
+  
+      }, (error) => {
+        console.error('Erreur lors de la récupération des missions :', error);
+      });
+    }
 
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
