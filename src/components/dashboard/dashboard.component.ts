@@ -773,6 +773,35 @@ export class DashboardComponent implements OnInit {
           "plaquette": false,
           "restitution": false
         }
+      },
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436285",
+        "nomClient": "Bpifrance Capital Régions 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
       }
       // ... (ajoutez ici toutes les autres données que vous avez fournies)
     ];
