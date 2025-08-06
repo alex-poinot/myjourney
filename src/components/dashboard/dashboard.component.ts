@@ -845,9 +845,9 @@ export class DashboardComponent implements OnInit {
         };
       });
 
-      this.totalMissions = this.groupedData.reduce((total, group) => 
-        total + group.clients.reduce((clientTotal, client) => 
-          clientTotal + client.missions.length, 0), 0);
+    this.totalMissions = this.groupedData.reduce((total, group) => 
+      total + group.clients.reduce((clientTotal, client) => 
+        clientTotal + client.missions.length, 0), 0);
   }
 
   private updatePagination(): void {
