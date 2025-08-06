@@ -739,20 +739,45 @@ export class DashboardComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.initializeDataFromApi();
+    this.initializeData();
     this.updatePagination();
   }
 
-  initializeDataFromApi(): void {
-    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-      .subscribe((response) => {
-        let data = response.data;
-        
-        const missions: MissionData[] = data;
+  initializeData(): void {
+    const realData: MissionData[] = [
+      {
+        "numeroGroupe": "114629",
+        "nomGroupe": "Bpifrance Investissement",
+        "numeroClient": "436284",
+        "nomClient": "Bpifrance Capital Régions 3",
+        "mission": "Mission EC",
+        "avantMission": {
+          "percentage": 75,
+          "lab": true,
+          "conflitCheck": true,
+          "qac": true,
+          "qam": false,
+          "ldm": false
+        },
+        "pendantMission": {
+          "percentage": 25,
+          "nog": true,
+          "checklist": false,
+          "revision": false,
+          "supervision": false
+        },
+        "finMission": {
+          "percentage": 0,
+          "ndsCr": false,
+          "qmm": false,
+          "plaquette": false,
+          "restitution": false
+        }
+      }
+      // ... (ajoutez ici toutes les autres données que vous avez fournies)
+    ];
 
-        console.log('Missions récupérées:', missions);
-
-    // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
+    // Grouper d'abord par numeroGroupe, puis par numeroClient
     const groupedByGroupe = realData.reduce((acc, mission) => {
       const groupKey = mission.numeroGroupe;
       if (!acc[groupKey]) {
@@ -794,7 +819,6 @@ export class DashboardComponent implements OnInit {
     this.totalMissions = this.groupedData.reduce((total, group) => 
       total + group.clients.reduce((clientTotal, client) => 
         clientTotal + client.missions.length, 0), 0);
-  }
 
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
