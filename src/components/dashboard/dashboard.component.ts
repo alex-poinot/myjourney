@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -69,6 +70,7 @@ interface ColumnGroup {
   imports: [
     CommonModule, 
     HttpClientModule,
+    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
