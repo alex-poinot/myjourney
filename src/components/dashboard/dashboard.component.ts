@@ -55,33 +55,6 @@ interface GroupData {
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Tableau de bord des missions</h1>
-        <p>Vue d'ensemble de l'avancement de toutes les missions</p>
-      </div>
-
-      <div class="table-controls">
-        <div class="pagination-info">
-          Affichage de {{ startIndex + 1 }} à {{ endIndex }} sur {{ totalMissions }} missions
-        </div>
-        <div class="table-actions">
-          <button class="expand-collapse-btn" (click)="toggleAllGroups()">
-            {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
-          </button>
-        </div>
-        <div class="pagination-controls">
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === 1"
-            (click)="goToPage(currentPage - 1)">
-            ← Précédent
-          </button>
-          <span class="page-info">Page {{ currentPage }} sur {{ totalPages }}</span>
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === totalPages"
-            (click)="goToPage(currentPage + 1)">
-            Suivant →
-          </button>
-        </div>
       </div>
 
       <div class="table-wrapper">
@@ -404,32 +377,6 @@ interface GroupData {
       border-bottom: 1px solid var(--gray-200);
     }
 
-    .table-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .expand-collapse-btn {
-      padding: 8px 16px;
-      border: 1px solid var(--primary-color);
-      background: white;
-      color: var(--primary-color);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .expand-collapse-btn:hover {
-      background: var(--primary-color);
-      color: white;
-    }
-
     .pagination-info {
       font-size: 14px;
       color: var(--gray-600);
@@ -535,7 +482,7 @@ interface GroupData {
       border-bottom: 1px solid var(--gray-200);
       white-space: nowrap;
       position: sticky;
-      top: 0;
+      top: 49px;
       z-index: 10;
     }
 
@@ -725,11 +672,6 @@ interface GroupData {
         align-items: stretch;
       }
       
-      .table-actions {
-        order: -1;
-        justify-content: center;
-      }
-      
       .pagination-controls {
         justify-content: center;
       }
@@ -768,7 +710,7 @@ export class DashboardComponent implements OnInit {
   allMissions: MissionData[] = [];
   completeGroupedData: GroupData[] = [];
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 50;
   totalMissions = 0;
   totalPages = 0;
   startIndex = 0;
@@ -782,42 +724,7 @@ export class DashboardComponent implements OnInit {
   }
 
   initializeData(): void {
-    // const realData: MissionData[] = [
-    //   {
-    //     "numeroGroupe": "114629",
-    //     "nomGroupe": "Bpifrance Investissement",
-    //     "numeroClient": "436284",
-    //     "nomClient": "Bpifrance Capital Régions 3",
-    //     "mission": "Mission EC",
-    //     "avantMission": {
-    //       "percentage": 75,
-    //       "lab": true,
-    //       "conflitCheck": true,
-    //       "qac": true,
-    //       "qam": false,
-    //       "ldm": false
-    //     },
-    //     "pendantMission": {
-    //       "percentage": 25,
-    //       "nog": true,
-    //       "checklist": false,
-    //       "revision": false,
-    //       "supervision": false
-    //     },
-    //     "finMission": {
-    //       "percentage": 0,
-    //       "ndsCr": false,
-    //       "qmm": false,
-    //       "plaquette": false,
-    //       "restitution": false
-    //     }
-    //   },
-    //   {
-    //     "numeroGroupe": "114629",
-    //     "nomGroupe": "Bpifrance Investissement",
-    //     "numeroClient": "436285",
-    //     "nomClient": "Bpifrance Capital Régions 3",
-    //     "mission": "Mission EC",
+    // Récupérer les données des missions depuis l'API
     this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
       .subscribe((response) => {
         let data = response.data;
@@ -983,14 +890,6 @@ export class DashboardComponent implements OnInit {
   toggleAllGroups(): void {
     this.allGroupsExpanded = !this.allGroupsExpanded;
     this.paginatedData.forEach(group => {
-      group.expanded = this.allGroupsExpanded;
-      group.clients.forEach(client => {
-        client.expanded = this.allGroupsExpanded;
-      });
-    });
-    
-    // Synchroniser avec les données complètes pour maintenir l'état
-    this.completeGroupedData.forEach(group => {
       group.expanded = this.allGroupsExpanded;
       group.clients.forEach(client => {
         client.expanded = this.allGroupsExpanded;
