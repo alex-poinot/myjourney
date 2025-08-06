@@ -62,6 +62,11 @@ interface GroupData {
         <div class="pagination-info">
           Affichage de {{ startIndex + 1 }} à {{ endIndex }} sur {{ totalMissions }} missions
         </div>
+        <div class="table-actions">
+          <button class="expand-collapse-btn" (click)="toggleAllGroups()">
+            {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
+          </button>
+        </div>
         <div class="pagination-controls">
           <button 
             class="pagination-btn" 
@@ -399,6 +404,32 @@ interface GroupData {
       border-bottom: 1px solid var(--gray-200);
     }
 
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .expand-collapse-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--primary-color);
+      background: white;
+      color: var(--primary-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .expand-collapse-btn:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
     .pagination-info {
       font-size: 14px;
       color: var(--gray-600);
@@ -694,6 +725,11 @@ interface GroupData {
         align-items: stretch;
       }
       
+      .table-actions {
+        order: -1;
+        justify-content: center;
+      }
+      
       .pagination-controls {
         justify-content: center;
       }
@@ -947,6 +983,14 @@ export class DashboardComponent implements OnInit {
   toggleAllGroups(): void {
     this.allGroupsExpanded = !this.allGroupsExpanded;
     this.paginatedData.forEach(group => {
+      group.expanded = this.allGroupsExpanded;
+      group.clients.forEach(client => {
+        client.expanded = this.allGroupsExpanded;
+      });
+    });
+    
+    // Synchroniser avec les données complètes pour maintenir l'état
+    this.completeGroupedData.forEach(group => {
       group.expanded = this.allGroupsExpanded;
       group.clients.forEach(client => {
         client.expanded = this.allGroupsExpanded;
