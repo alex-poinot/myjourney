@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 interface MissionData {
   numeroGroupe: string;
@@ -48,7 +49,7 @@ interface GroupData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HttpClientModule],
   template: `
     <div class="dashboard-container">
       <div class="dashboard-header">
@@ -60,11 +61,11 @@ interface GroupData {
         <table class="mission-table">
           <thead>
             <tr>
-              <th rowspan="2" class="group-header">
+              <!--<th rowspan="2" class="group-header">
                 <button class="collapse-btn" (click)="toggleAllGroups()">
                   {{ allGroupsExpanded ? '▼' : '▶' }}
                 </button>
-              </th>
+              </th>-->
               <!-- Groupe Information -->
               <th colspan="5" class="column-group-header information">
                 Information
@@ -126,14 +127,24 @@ interface GroupData {
             <ng-container *ngFor="let group of groupedData; let groupIndex = index">
               <!-- Ligne de groupe -->
               <tr class="group-row main-group" (click)="toggleMainGroup(groupIndex)">
-                <td class="group-cell">
+                <!--<td class="group-cell">
                   <button class="collapse-btn">
                     {{ group.expanded ? '▼' : '▶' }}
                   </button>
                   <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
-                </td>
+                </td>-->
                 <td colspan="100%" class="group-summary">
-                  {{ getTotalMissionsInGroup(group) }} mission(s) - {{ group.clients.length }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
+                  <div class="group-cell">
+                    <div class="collapse-btn-container">
+                      <button class="collapse-btn">
+                        {{ group.expanded ? '▼' : '▶' }}
+                      </button>
+                    </div>
+                    <div class="group-info">
+                      <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
+                      {{ getTotalMissionsInGroup(group) }} mission(s) - {{ group.clients.length }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
+                    </div>
+                  </div>
                 </td>
               </tr>
               
@@ -143,13 +154,15 @@ interface GroupData {
                 <tr class="group-row client-group" 
                     [class.hidden]="!group.expanded"
                     (click)="toggleClientGroup(groupIndex, clientIndex)">
-                  <td class="client-indent"></td>
-                  <td class="client-cell" colspan="4">
-                    <button class="collapse-btn">
-                      {{ client.expanded ? '▼' : '▶' }}
-                    </button>
-                    <strong>{{ client.numeroClient }} - {{ client.nomClient }}</strong>
-                    <span class="client-summary">({{ client.missions.length }} mission(s))</span>
+                  <!--<td class="client-indent"></td>-->
+                  <td class="client-cell" colspan="5">
+                    <div class="client-row">
+                      <button class="collapse-btn">
+                        {{ client.expanded ? '▼' : '▶' }}
+                      </button>
+                      <strong>{{ client.numeroClient }} - {{ client.nomClient }}</strong>
+                      <span class="client-summary">({{ client.missions.length }} mission(s))</span>
+                    </div>
                   </td>
                   
                   <!-- Colonnes vides pour l'alignement -->
@@ -179,7 +192,7 @@ interface GroupData {
                 <tr *ngFor="let mission of client.missions" 
                     class="mission-row" 
                     [class.hidden]="!group.expanded || !client.expanded">
-                  <td class="mission-indent"></td>
+                  <!--<td class="mission-indent"></td>-->
                   
                   <!-- Information -->
                   <td>{{ mission.numeroGroupe }}</td>
@@ -282,6 +295,9 @@ interface GroupData {
     </div>
   `,
   styles: [`
+    .hidden {
+      display: none;
+    }
     .dashboard-container {
       padding: 24px;
       background: #f8fafc;
@@ -328,6 +344,18 @@ interface GroupData {
       position: relative;
     }
 
+    .group-cell {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .client-row {
+      padding-left: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
     .column-group-header.information {
       background: var(--primary-dark);
     }
@@ -381,14 +409,6 @@ interface GroupData {
     .group-row.client-group:hover {
       background: rgba(100, 206, 199, 0.2);
     }
-    .group-cell {
-      padding: 12px 16px;
-      font-weight: 600;
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
 
     .client-indent {
       width: 40px;
@@ -399,9 +419,6 @@ interface GroupData {
       padding: 10px 16px;
       font-weight: 500;
       color: var(--secondary-color);
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     .client-summary {
@@ -536,132 +553,66 @@ export class DashboardComponent implements OnInit {
 
   groupedData: GroupData[] = [];
 
+  constructor(private http: HttpClient) {}
+
   ngOnInit(): void {
-    this.initializeMockData();
+    // this.initializeMockData();
+    this.initializeDataFromApi();
   }
 
-  initializeMockData(): void {
-    const missions: MissionData[] = [
-      {
-        numeroGroupe: '114629',
-        nomGroupe: 'Bpifrance investissement',
-        numeroClient: '114629',
-        nomClient: 'Bpifrance investissement',
-        mission: 'Mission EC',
-        avantMission: { percentage: 75, lab: true, conflitCheck: true, qac: true, qam: false, ldm: false },
-        pendantMission: { percentage: 25, nog: true, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '114629',
-        nomGroupe: 'Bpifrance investissement',
-        numeroClient: '114629',
-        nomClient: 'Bpifrance investissement',
-        mission: 'Mission Paie',
-        avantMission: { percentage: 75, lab: true, conflitCheck: true, qac: true, qam: false, ldm: false },
-        pendantMission: { percentage: 25, nog: true, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '114629',
-        nomGroupe: 'Bpifrance investissement',
-        numeroClient: '114629',
-        nomClient: 'Bpifrance investissement',
-        mission: 'Mission Spé',
-        avantMission: { percentage: 75, lab: true, conflitCheck: true, qac: true, qam: false, ldm: false },
-        pendantMission: { percentage: 25, nog: true, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '114629',
-        nomGroupe: 'Bpifrance investissement',
-        numeroClient: '415493',
-        nomClient: 'FPS Bpifrance Capital I',
-        mission: 'Mission EC',
-        avantMission: { percentage: 75, lab: true, conflitCheck: true, qac: true, qam: false, ldm: false },
-        pendantMission: { percentage: 25, nog: true, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '114629',
-        nomGroupe: 'Bpifrance investissement',
-        numeroClient: '415493',
-        nomClient: 'FPS Bpifrance Capital I',
-        mission: 'Mission Spé',
-        avantMission: { percentage: 75, lab: true, conflitCheck: true, qac: true, qam: false, ldm: false },
-        pendantMission: { percentage: 25, nog: true, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '129712',
-        nomGroupe: 'MAJORELLE',
-        numeroClient: '129696',
-        nomClient: 'IMMORELLE',
-        mission: 'Mission Spé',
-        avantMission: { percentage: 50, lab: true, conflitCheck: true, qac: false, qam: false, ldm: false },
-        pendantMission: { percentage: 0, nog: false, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '129712',
-        nomGroupe: 'MAJORELLE',
-        numeroClient: '129712',
-        nomClient: 'MAJORELLE',
-        mission: 'Mission EC',
-        avantMission: { percentage: 50, lab: true, conflitCheck: true, qac: false, qam: false, ldm: false },
-        pendantMission: { percentage: 0, nog: false, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      },
-      {
-        numeroGroupe: '129712',
-        nomGroupe: 'MAJORELLE',
-        numeroClient: '129712',
-        nomClient: 'MAJORELLE',
-        mission: 'Mission Paie',
-        avantMission: { percentage: 50, lab: true, conflitCheck: true, qac: false, qam: false, ldm: false },
-        pendantMission: { percentage: 0, nog: false, checklist: false, revision: false, supervision: false },
-        finMission: { percentage: 0, ndsCr: false, qmm: false, plaquette: false, restitution: false }
-      }
-    ];
+  initializeDataFromApi(): void {
+    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
+      .subscribe((response) => {
+        let data = response.data;
+        
+        const missions: MissionData[] = data;
 
-    // Grouper d'abord par numeroGroupe, puis par numeroClient
-    const groupedByGroupe = missions.reduce((acc, mission) => {
-      const groupKey = mission.numeroGroupe;
-      if (!acc[groupKey]) {
-        acc[groupKey] = {
-          numeroGroupe: mission.numeroGroupe,
-          nomGroupe: mission.nomGroupe,
-          missions: []
-        };
-      }
-      acc[groupKey].missions.push(mission);
-      return acc;
-    }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
+        console.log('Missions récupérées:', missions);
 
-    // Créer la structure finale avec double groupement
-    this.groupedData = Object.values(groupedByGroupe).map(group => {
-      // Grouper les missions par numeroClient
-      const clientGroups = group.missions.reduce((acc, mission) => {
-        const clientKey = mission.numeroClient;
-        if (!acc[clientKey]) {
-          acc[clientKey] = {
-            numeroClient: mission.numeroClient,
-            nomClient: mission.nomClient,
-            missions: [],
+
+        // Grouper d'abord par numeroGroupe, puis par numeroClient (exactement comme avant)
+        const groupedByGroupe = missions.reduce((acc, mission) => {
+          const groupKey = mission.numeroGroupe;
+          if (!acc[groupKey]) {
+            acc[groupKey] = {
+              numeroGroupe: mission.numeroGroupe,
+              nomGroupe: mission.nomGroupe,
+              missions: []
+            };
+          }
+          acc[groupKey].missions.push(mission);
+          return acc;
+        }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
+
+        // Créer la structure finale avec double groupement
+        this.groupedData = Object.values(groupedByGroupe).map(group => {
+          // Grouper les missions par numeroClient
+          const clientGroups = group.missions.reduce((acc, mission) => {
+            const clientKey = mission.numeroClient;
+            if (!acc[clientKey]) {
+              acc[clientKey] = {
+                numeroClient: mission.numeroClient,
+                nomClient: mission.nomClient,
+                missions: [],
+                expanded: true
+              };
+            }
+            acc[clientKey].missions.push(mission);
+            return acc;
+          }, {} as { [key: string]: ClientGroup });
+
+          return {
+            numeroGroupe: group.numeroGroupe,
+            nomGroupe: group.nomGroupe,
+            clients: Object.values(clientGroups),
             expanded: true
           };
-        }
-        acc[clientKey].missions.push(mission);
-        return acc;
-      }, {} as { [key: string]: ClientGroup });
+        });
 
-      return {
-        numeroGroupe: group.numeroGroupe,
-        nomGroupe: group.nomGroupe,
-        clients: Object.values(clientGroups),
-        expanded: true
-      };
-    });
+      }, (error) => {
+        console.error('Erreur lors de la récupération des missions :', error);
+      });
   }
 
   toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
