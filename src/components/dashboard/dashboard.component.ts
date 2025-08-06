@@ -875,6 +875,12 @@ export class DashboardComponent implements OnInit {
       ...group,
       clients: Array.from((group.clients as any).values())
     }));
+    
+    // Synchroniser l'état d'expansion avec les données complètes
+    this.syncExpansionState();
+    
+    // Mettre à jour l'état du bouton
+    this.updateAllGroupsExpandedState();
   }
 
   goToPage(page: number): void {
@@ -919,15 +925,44 @@ export class DashboardComponent implements OnInit {
   toggleMainGroup(index: number): void {
     this.paginatedData[index].expanded = !this.paginatedData[index].expanded;
     
+    // Synchroniser avec les données complètes
+    const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === this.paginatedData[index].numeroGroupe);
+    if (completeGroup) {
+      completeGroup.expanded = this.paginatedData[index].expanded;
+    }
+    
     // Quand on ouvre/ferme le groupe, synchroniser tous les clients avec l'état du groupe
     this.paginatedData[index].clients.forEach(client => {
       client.expanded = this.paginatedData[index].expanded;
+      
+      // Synchroniser avec les données complètes
+      if (completeGroup) {
+        const completeClient = completeGroup.clients.find(c => c.numeroClient === client.numeroClient);
+        if (completeClient) {
+          completeClient.expanded = client.expanded;
+        }
+      }
     });
+    
+    // Mettre à jour l'état du bouton
+    this.updateAllGroupsExpandedState();
   }
 
   toggleClientGroup(groupIndex: number, clientIndex: number): void {
     this.paginatedData[groupIndex].clients[clientIndex].expanded = 
       !this.paginatedData[groupIndex].clients[clientIndex].expanded;
+    
+    // Synchroniser avec les données complètes
+    const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === this.paginatedData[groupIndex].numeroGroupe);
+    if (completeGroup) {
+      const completeClient = completeGroup.clients.find(c => c.numeroClient === this.paginatedData[groupIndex].clients[clientIndex].numeroClient);
+      if (completeClient) {
+        completeClient.expanded = this.paginatedData[groupIndex].clients[clientIndex].expanded;
+      }
+    }
+    
+    // Mettre à jour l'état du bouton
+    this.updateAllGroupsExpandedState();
   }
 
   toggleAllGroups(): void {
@@ -948,6 +983,32 @@ export class DashboardComponent implements OnInit {
         client.expanded = this.allGroupsExpanded;
       });
     });
+  }
+
+  private syncExpansionState(): void {
+    // Synchroniser l'état d'expansion des données paginées avec les données complètes
+    this.paginatedData.forEach(paginatedGroup => {
+      const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === paginatedGroup.numeroGroupe);
+      if (completeGroup) {
+        paginatedGroup.expanded = completeGroup.expanded;
+        
+        paginatedGroup.clients.forEach(paginatedClient => {
+          const completeClient = completeGroup.clients.find(c => c.numeroClient === paginatedClient.numeroClient);
+          if (completeClient) {
+            paginatedClient.expanded = completeClient.expanded;
+          }
+        });
+      }
+    });
+  }
+
+  private updateAllGroupsExpandedState(): void {
+    // Vérifier si tous les groupes et clients sont développés
+    const allExpanded = this.completeGroupedData.every(group => 
+      group.expanded && group.clients.every(client => client.expanded)
+    );
+    
+    this.allGroupsExpanded = allExpanded;
   }
 
   getTotalMissionsInGroup(group: GroupData): number {
