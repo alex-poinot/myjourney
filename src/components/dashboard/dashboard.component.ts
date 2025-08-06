@@ -849,7 +849,6 @@ export class DashboardComponent implements OnInit {
         total + group.clients.reduce((clientTotal, client) => 
           clientTotal + client.missions.length, 0), 0);
     }
-  }
 
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
