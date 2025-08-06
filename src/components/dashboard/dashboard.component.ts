@@ -164,7 +164,7 @@ interface GroupData {
                     </div>
                     <div class="group-info">
                       <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
-                      {{ getTotalMissionsInGroup(group) }} mission(s) - {{ group.clients.length }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
+                      {{ getTotalMissionsInGroup(group) }} mission(s) - {{ getTotalClientsInGroup(group) }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
                     </div>
                   </div>
                 </td>
@@ -183,7 +183,7 @@ interface GroupData {
                         {{ client.expanded ? '▼' : '▶' }}
                       </button>
                       <strong>{{ client.numeroClient }} - {{ client.nomClient }}</strong>
-                      <span class="client-summary">({{ client.missions.length }} mission(s))</span>
+                      <span class="client-summary">({{ getTotalMissionsInClient(group, client) }} mission(s))</span>
                     </div>
                   </td>
                   
@@ -730,6 +730,7 @@ export class DashboardComponent implements OnInit {
   groupedData: GroupData[] = [];
   paginatedData: GroupData[] = [];
   allMissions: MissionData[] = [];
+  completeGroupedData: GroupData[] = [];
   currentPage = 1;
   itemsPerPage = 10;
   totalMissions = 0;
@@ -829,6 +830,9 @@ export class DashboardComponent implements OnInit {
         this.totalMissions = this.groupedData.reduce((total, group) => 
           total + group.clients.reduce((clientTotal, client) => 
             clientTotal + client.missions.length, 0), 0);
+        
+        // Sauvegarder les données complètes pour les compteurs
+        this.completeGroupedData = JSON.parse(JSON.stringify(this.groupedData));
         
         // Créer une liste plate de toutes les missions pour la pagination
         this.allMissions = this.groupedData.flatMap(group => 
@@ -951,7 +955,31 @@ export class DashboardComponent implements OnInit {
   }
 
   getTotalMissionsInGroup(group: GroupData): number {
-    return group.clients.reduce((total, client) => total + client.missions.length, 0);
+    // Trouver le groupe complet correspondant
+    const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === group.numeroGroupe);
+    if (!completeGroup) return 0;
+    
+    return completeGroup.clients.reduce((total, client) => total + client.missions.length, 0);
+  }
+
+  getTotalClientsInGroup(group: GroupData): number {
+    // Trouver le groupe complet correspondant
+    const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === group.numeroGroupe);
+    if (!completeGroup) return 0;
+    
+    return completeGroup.clients.length;
+  }
+
+  getTotalMissionsInClient(group: GroupData, client: ClientGroup): number {
+    // Trouver le groupe complet correspondant
+    const completeGroup = this.completeGroupedData.find(g => g.numeroGroupe === group.numeroGroupe);
+    if (!completeGroup) return 0;
+    
+    // Trouver le client complet correspondant
+    const completeClient = completeGroup.clients.find(c => c.numeroClient === client.numeroClient);
+    if (!completeClient) return 0;
+    
+    return completeClient.missions.length;
   }
 
   getMainGroupAverage(group: GroupData): number {
