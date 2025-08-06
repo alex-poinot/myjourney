@@ -55,6 +55,11 @@ interface GroupData {
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Tableau de bord des missions</h1>
+        <div class="header-controls">
+          <button class="expand-all-btn" (click)="toggleAllGroups()">
+            {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
+          </button>
+        </div>
       </div>
 
       <div class="table-wrapper">
@@ -331,11 +336,6 @@ interface GroupData {
             Dernière →
           </button>
         </div>
-      </div>
-      <div class="header-controls">
-        <button class="expand-all-btn" (click)="toggleAllGroups()">
-          {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
-        </button>
       </div>
     </div>
   `,
