@@ -9,6 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 interface MissionData {
   numeroGroupe: string;
@@ -48,6 +50,19 @@ interface FlatMissionData extends MissionData {
   overallProgress: number;
 }
 
+interface GroupedMissionData {
+  groupKey: string;
+  groupName: string;
+  missions: FlatMissionData[];
+  expanded: boolean;
+}
+
+interface ColumnGroup {
+  name: string;
+  columns: string[];
+  visible: boolean;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -61,55 +76,95 @@ interface FlatMissionData extends MissionData {
     MatIconModule,
     MatExpansionModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatButtonToggleModule,
+    MatCheckboxModule
   ],
   template: `
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Tableau de bord des missions</h1>
         <p>Vue d'ensemble de l'avancement de toutes les missions</p>
+        
+        <!-- Contrôles de colonnes -->
+        <div class="column-controls">
+          <h3>Affichage des colonnes :</h3>
+          <div class="column-toggles">
+            <mat-checkbox 
+              *ngFor="let group of columnGroups" 
+              [(ngModel)]="group.visible"
+              (change)="updateDisplayedColumns()">
+              {{ group.name }}
+            </mat-checkbox>
+          </div>
+        </div>
       </div>
 
       <mat-card class="table-card">
         <mat-card-header>
-          <mat-card-title>Missions ({{ dataSource.data.length }} au total)</mat-card-title>
+          <mat-card-title>Missions ({{ getTotalMissions() }} au total, {{ groupedData.length }} groupes)</mat-card-title>
         </mat-card-header>
         
         <mat-card-content>
           <div class="table-container">
-            <table mat-table [dataSource]="dataSource" matSort class="mission-table">
+            <table mat-table [dataSource]="flatDataSource" matSort class="mission-table">
               
               <!-- Colonne Information -->
+              <ng-container matColumnDef="groupExpander">
+                <th mat-header-cell *matHeaderCellDef class="expander-header">Groupe</th>
+                <td mat-cell *matCellDef="let mission" class="expander-cell">
+                  <button 
+                    *ngIf="mission.isGroupHeader"
+                    mat-icon-button
+                    (click)="toggleGroup(mission.groupKey)"
+                    class="group-toggle">
+                    <mat-icon>{{ getGroupExpanded(mission.groupKey) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
               <ng-container matColumnDef="numeroGroupe">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">N° Groupe</th>
-                <td mat-cell *matCellDef="let mission">{{ mission.numeroGroupe }}</td>
+                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                  <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.numeroGroupe }}</span>
+                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroGroupe }}</span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="nomGroupe">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Nom Groupe</th>
-                <td mat-cell *matCellDef="let mission">{{ mission.nomGroupe }}</td>
+                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                  <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.nomGroupe }} ({{ getGroupMissionCount(mission.groupKey) }} missions)</span>
+                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomGroupe }}</span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="numeroClient">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">N° Client</th>
-                <td mat-cell *matCellDef="let mission">{{ mission.numeroClient }}</td>
+                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroClient }}</span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="nomClient">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Nom Client</th>
-                <td mat-cell *matCellDef="let mission">{{ mission.nomClient }}</td>
+                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomClient }}</span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="mission">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Mission</th>
-                <td mat-cell *matCellDef="let mission">{{ mission.mission }}</td>
+                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                  <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.mission }}</span>
+                </td>
               </ng-container>
 
               <!-- Colonnes Avant Mission -->
               <ng-container matColumnDef="avantMissionProgress">
                 <th mat-header-cell *matHeaderCellDef class="avant-mission-header">Avant Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell">
-                  <div class="progress-circle" [attr.data-percentage]="mission.avantMission.percentage">
+                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.avantMission.percentage">
                     {{ mission.avantMission.percentage }}%
                   </div>
                 </td>
@@ -117,8 +172,8 @@ interface FlatMissionData extends MissionData {
 
               <ng-container matColumnDef="avantMissionTasks">
                 <th mat-header-cell *matHeaderCellDef class="avant-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell">
-                  <div class="task-icons">
+                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.avantMission.lab" title="LAB">
                       {{ mission.avantMission.lab ? '✅' : '⏳' }}
                     </span>
@@ -141,8 +196,8 @@ interface FlatMissionData extends MissionData {
               <!-- Colonnes Pendant Mission -->
               <ng-container matColumnDef="pendantMissionProgress">
                 <th mat-header-cell *matHeaderCellDef class="pendant-mission-header">Pendant Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell">
-                  <div class="progress-circle" [attr.data-percentage]="mission.pendantMission.percentage">
+                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.pendantMission.percentage">
                     {{ mission.pendantMission.percentage }}%
                   </div>
                 </td>
@@ -150,8 +205,8 @@ interface FlatMissionData extends MissionData {
 
               <ng-container matColumnDef="pendantMissionTasks">
                 <th mat-header-cell *matHeaderCellDef class="pendant-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell">
-                  <div class="task-icons">
+                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.pendantMission.nog" title="NOG">
                       {{ mission.pendantMission.nog ? '✅' : '⏳' }}
                     </span>
@@ -171,8 +226,8 @@ interface FlatMissionData extends MissionData {
               <!-- Colonnes Fin Mission -->
               <ng-container matColumnDef="finMissionProgress">
                 <th mat-header-cell *matHeaderCellDef class="fin-mission-header">Fin Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell">
-                  <div class="progress-circle" [attr.data-percentage]="mission.finMission.percentage">
+                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.finMission.percentage">
                     {{ mission.finMission.percentage }}%
                   </div>
                 </td>
@@ -180,8 +235,8 @@ interface FlatMissionData extends MissionData {
 
               <ng-container matColumnDef="finMissionTasks">
                 <th mat-header-cell *matHeaderCellDef class="fin-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell">
-                  <div class="task-icons">
+                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.finMission.ndsCr" title="NDS/CR">
                       {{ mission.finMission.ndsCr ? '✅' : '⏳' }}
                     </span>
@@ -201,15 +256,17 @@ interface FlatMissionData extends MissionData {
               <!-- Colonne Progrès Global -->
               <ng-container matColumnDef="overallProgress">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="overall-header">Progrès Global</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell">
-                  <div class="progress-circle large" [attr.data-percentage]="mission.overallProgress">
+                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                  <div *ngIf="!mission.isGroupHeader" class="progress-circle large" [attr.data-percentage]="mission.overallProgress">
                     {{ mission.overallProgress }}%
                   </div>
                 </td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="mission-row"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                  [class.group-header-row]="row.isGroupHeader"
+                  [class.mission-data-row]="!row.isGroupHeader"></tr>
             </table>
           </div>
 
@@ -251,6 +308,26 @@ interface FlatMissionData extends MissionData {
       font-size: 16px;
     }
 
+    .column-controls {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 16px;
+    }
+
+    .column-controls h3 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      color: var(--gray-700);
+    }
+
+    .column-toggles {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
     .table-card {
       flex: 1;
       display: flex;
@@ -276,6 +353,26 @@ interface FlatMissionData extends MissionData {
     .mission-table {
       width: 100%;
       background: white;
+    }
+
+    /* Expander column */
+    .expander-header {
+      background: var(--gray-800) !important;
+      color: white !important;
+      font-weight: 600 !important;
+      padding: 16px 12px !important;
+      width: 60px !important;
+      border-right: 1px solid rgba(255,255,255,0.2) !important;
+    }
+
+    .expander-cell {
+      width: 60px !important;
+      text-align: center !important;
+      padding: 8px !important;
+    }
+
+    .group-toggle {
+      color: var(--primary-color);
     }
 
     /* Headers avec couleurs par section */
@@ -325,8 +422,38 @@ interface FlatMissionData extends MissionData {
       font-size: 14px !important;
     }
 
-    .mission-row:hover {
+    .mission-data-row:hover {
       background: var(--gray-50) !important;
+    }
+
+    /* Styles pour les groupes */
+    .group-header-row {
+      background: var(--primary-light) !important;
+      font-weight: 600 !important;
+    }
+
+    .group-header-row:hover {
+      background: rgba(100, 206, 199, 0.3) !important;
+    }
+
+    .group-header {
+      background: var(--primary-light) !important;
+      font-weight: 600 !important;
+      color: var(--primary-dark) !important;
+    }
+
+    .group-header-text {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .mission-row {
+      background: white;
+    }
+
+    .mission-indent {
+      margin-left: 20px;
+      font-size: 13px;
     }
 
     .percentage-cell {
@@ -438,6 +565,11 @@ interface FlatMissionData extends MissionData {
         padding: 12px 8px !important;
         font-size: 12px !important;
       }
+
+      .column-toggles {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
 
     /* Sticky header */
@@ -449,22 +581,39 @@ interface FlatMissionData extends MissionData {
   `]
 })
 export class DashboardComponent implements OnInit {
-  displayedColumns: string[] = [
-    'numeroGroupe',
-    'nomGroupe', 
-    'numeroClient',
-    'nomClient',
-    'mission',
-    'avantMissionProgress',
-    'avantMissionTasks',
-    'pendantMissionProgress', 
-    'pendantMissionTasks',
-    'finMissionProgress',
-    'finMissionTasks',
-    'overallProgress'
+  columnGroups: ColumnGroup[] = [
+    {
+      name: 'Information',
+      columns: ['groupExpander', 'numeroGroupe', 'nomGroupe', 'numeroClient', 'nomClient', 'mission'],
+      visible: true
+    },
+    {
+      name: 'Avant Mission',
+      columns: ['avantMissionProgress', 'avantMissionTasks'],
+      visible: true
+    },
+    {
+      name: 'Pendant Mission',
+      columns: ['pendantMissionProgress', 'pendantMissionTasks'],
+      visible: true
+    },
+    {
+      name: 'Fin Mission',
+      columns: ['finMissionProgress', 'finMissionTasks'],
+      visible: true
+    },
+    {
+      name: 'Progrès Global',
+      columns: ['overallProgress'],
+      visible: true
+    }
   ];
 
+  displayedColumns: string[] = [];
   dataSource = new MatTableDataSource<FlatMissionData>();
+  flatDataSource = new MatTableDataSource<any>();
+  groupedData: GroupedMissionData[] = [];
+  expandedGroups: Set<string> = new Set();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -472,12 +621,22 @@ export class DashboardComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    this.updateDisplayedColumns();
     this.initializeDataFromApi();
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.flatDataSource.paginator = this.paginator;
+    this.flatDataSource.sort = this.sort;
+  }
+
+  updateDisplayedColumns(): void {
+    this.displayedColumns = [];
+    this.columnGroups.forEach(group => {
+      if (group.visible) {
+        this.displayedColumns.push(...group.columns);
+      }
+    });
   }
 
   initializeDataFromApi(): void {
@@ -657,6 +816,90 @@ export class DashboardComponent implements OnInit {
     }));
 
     this.dataSource.data = flatData;
+    this.createGroupedData(flatData);
+    this.updateFlatDataSource();
+  }
+
+  private createGroupedData(missions: FlatMissionData[]): void {
+    const groups = new Map<string, FlatMissionData[]>();
+    
+    missions.forEach(mission => {
+      const groupKey = `${mission.numeroGroupe}-${mission.nomGroupe}`;
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, []);
+      }
+      groups.get(groupKey)!.push(mission);
+    });
+
+    this.groupedData = Array.from(groups.entries()).map(([groupKey, groupMissions]) => ({
+      groupKey,
+      groupName: groupMissions[0].nomGroupe,
+      missions: groupMissions,
+      expanded: this.expandedGroups.has(groupKey)
+    }));
+
+    // Expand all groups by default
+    this.groupedData.forEach(group => {
+      this.expandedGroups.add(group.groupKey);
+      group.expanded = true;
+    });
+  }
+
+  private updateFlatDataSource(): void {
+    const flatData: any[] = [];
+    
+    this.groupedData.forEach(group => {
+      // Add group header
+      const groupHeader = {
+        ...group.missions[0],
+        isGroupHeader: true,
+        groupKey: group.groupKey
+      };
+      flatData.push(groupHeader);
+      
+      // Add missions if group is expanded
+      if (group.expanded) {
+        group.missions.forEach(mission => {
+          flatData.push({
+            ...mission,
+            isGroupHeader: false,
+            groupKey: group.groupKey
+          });
+        });
+      }
+    });
+    
+    this.flatDataSource.data = flatData;
+  }
+
+  toggleGroup(groupKey: string): void {
+    if (this.expandedGroups.has(groupKey)) {
+      this.expandedGroups.delete(groupKey);
+    } else {
+      this.expandedGroups.add(groupKey);
+    }
+    
+    // Update grouped data
+    this.groupedData.forEach(group => {
+      if (group.groupKey === groupKey) {
+        group.expanded = this.expandedGroups.has(groupKey);
+      }
+    });
+    
+    this.updateFlatDataSource();
+  }
+
+  getGroupExpanded(groupKey: string): boolean {
+    return this.expandedGroups.has(groupKey);
+  }
+
+  getGroupMissionCount(groupKey: string): number {
+    const group = this.groupedData.find(g => g.groupKey === groupKey);
+    return group ? group.missions.length : 0;
+  }
+
+  getTotalMissions(): number {
+    return this.dataSource.data.length;
   }
 
   private getTasksSummary(phase: any): string {
