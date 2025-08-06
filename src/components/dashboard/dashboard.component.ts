@@ -745,7 +745,6 @@ export class DashboardComponent implements OnInit {
 
   initializeDataFromApi(): void {
     this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-    // voici ce que retourne l'API {success: true, data: Array(174), count: 174, timestamp: '2025-08-06T09:03:10.203Z'}, MissionData[] est donc dans data
       .subscribe((response) => {
         let data = response.data;
         
