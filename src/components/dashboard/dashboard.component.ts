@@ -332,6 +332,11 @@ interface GroupData {
           </button>
         </div>
       </div>
+      <div class="header-controls">
+        <button class="expand-all-btn" (click)="toggleAllGroups()">
+          {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
+        </button>
+      </div>
     </div>
   `,
   styles: [`
@@ -365,6 +370,33 @@ interface GroupData {
       margin: 0;
       color: var(--gray-600);
       font-size: 16px;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .expand-all-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .expand-all-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
     }
 
     .table-controls {
@@ -666,6 +698,17 @@ interface GroupData {
 
     /* Responsive */
     @media (max-width: 768px) {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      
+      .header-controls {
+        width: 100%;
+        justify-content: flex-end;
+      }
+      
       .table-controls {
         flex-direction: column;
         gap: 12px;
@@ -889,6 +932,16 @@ export class DashboardComponent implements OnInit {
 
   toggleAllGroups(): void {
     this.allGroupsExpanded = !this.allGroupsExpanded;
+    
+    // Mettre à jour les données complètes
+    this.completeGroupedData.forEach(group => {
+      group.expanded = this.allGroupsExpanded;
+      group.clients.forEach(client => {
+        client.expanded = this.allGroupsExpanded;
+      });
+    });
+    
+    // Mettre à jour les données paginées
     this.paginatedData.forEach(group => {
       group.expanded = this.allGroupsExpanded;
       group.clients.forEach(client => {
