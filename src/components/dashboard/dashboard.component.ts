@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 interface MissionData {
@@ -49,7 +50,7 @@ interface GroupData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
     <div class="dashboard-container">
       <div class="dashboard-header">
@@ -57,7 +58,28 @@ interface GroupData {
         <p>Vue d'ensemble de l'avancement de toutes les missions</p>
       </div>
 
-      <div class="table-container">
+      <div class="table-controls">
+        <div class="pagination-info">
+          Affichage de {{ startIndex + 1 }} à {{ endIndex }} sur {{ totalMissions }} missions
+        </div>
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)">
+            ← Précédent
+          </button>
+          <span class="page-info">Page {{ currentPage }} sur {{ totalPages }}</span>
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)">
+            Suivant →
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
         <table class="mission-table">
           <thead>
             <tr>
@@ -124,7 +146,7 @@ interface GroupData {
             </tr>
           </thead>
           <tbody>
-            <ng-container *ngFor="let group of groupedData; let groupIndex = index">
+            <ng-container *ngFor="let group of paginatedData; let groupIndex = index">
               <!-- Ligne de groupe -->
               <tr class="group-row main-group" (click)="toggleMainGroup(groupIndex)">
                 <!--<td class="group-cell">
@@ -292,6 +314,46 @@ interface GroupData {
           </tbody>
         </table>
       </div>
+
+      <div class="pagination-footer">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === 1"
+            (click)="goToPage(1)">
+            ← Première
+          </button>
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)">
+            ← Précédent
+          </button>
+          
+          <div class="page-numbers">
+            <button 
+              *ngFor="let page of getVisiblePages()" 
+              class="page-btn"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)">
+            Suivant →
+          </button>
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(totalPages)">
+            Dernière →
+          </button>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -299,13 +361,19 @@ interface GroupData {
       display: none;
     }
     .dashboard-container {
-      padding: 24px;
-      background: #f8fafc;
-      min-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 70px);
+      background: var(--gray-50);
+      overflow: hidden;
     }
 
     .dashboard-header {
-      margin-bottom: 24px;
+      flex-shrink: 0;
+      padding: 24px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .dashboard-header h1 {
@@ -320,18 +388,69 @@ interface GroupData {
       color: var(--gray-600);
       font-size: 16px;
     }
-      background: rgba(100, 206, 199, 0.2);
-      color: #226D68;
+
+    .table-controls {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: var(--gray-600);
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pagination-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--gray-50);
+      border-color: var(--primary-color);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-info {
+      font-size: 14px;
+      color: var(--gray-700);
+      font-weight: 500;
+    }
+
+    .table-wrapper {
+      flex: 1;
+      overflow: auto;
+      margin: 0 24px;
       background: white;
       border-radius: 12px;
       box-shadow: var(--shadow-md);
-      overflow: hidden;
+      border: 1px solid var(--gray-200);
     }
 
     .mission-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
+      min-width: 100%;
     }
 
     .column-group-header {
@@ -342,6 +461,9 @@ interface GroupData {
       text-align: center;
       border-bottom: 2px solid var(--secondary-color);
       position: relative;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .group-cell {
@@ -381,6 +503,9 @@ interface GroupData {
       text-align: center;
       border-bottom: 1px solid var(--gray-200);
       white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .column-header.percentage {
@@ -527,6 +652,57 @@ interface GroupData {
       margin-right: 8px;
     }
 
+    .pagination-footer {
+      flex-shrink: 0;
+      padding: 16px 24px;
+      background: white;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 4px;
+    }
+
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      min-width: 40px;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      background: var(--gray-50);
+      border-color: var(--primary-color);
+    }
+
+    .page-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .table-controls {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      
+      .pagination-controls {
+        justify-content: center;
+      }
+      
+      .page-numbers {
+        display: none;
+      }
+    }
+
     @media (max-width: 1200px) {
       .mission-table {
         font-size: 12px;
@@ -552,11 +728,19 @@ export class DashboardComponent implements OnInit {
   allGroupsExpanded = true;
 
   groupedData: GroupData[] = [];
+  paginatedData: GroupData[] = [];
+  currentPage = 1;
+  itemsPerPage = 50;
+  totalMissions = 0;
+  totalPages = 0;
+  startIndex = 0;
+  endIndex = 0;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.initializeDataFromRealData();
+    this.updatePagination();
   }
 
   initializeDataFromRealData(): void {
@@ -5649,6 +5833,43 @@ export class DashboardComponent implements OnInit {
         expanded: true
       };
     });
+
+    this.totalMissions = this.groupedData.reduce((total, group) => 
+      total + group.clients.reduce((clientTotal, client) => 
+        clientTotal + client.missions.length, 0), 0);
+  }
+
+  private updatePagination(): void {
+    this.totalPages = Math.ceil(this.groupedData.length / this.itemsPerPage);
+    this.startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.endIndex = Math.min(this.startIndex + this.itemsPerPage, this.groupedData.length);
+    
+    this.paginatedData = this.groupedData.slice(this.startIndex, this.endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  getVisiblePages(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+    
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   }
 
   toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
@@ -5666,22 +5887,22 @@ export class DashboardComponent implements OnInit {
   }
 
   toggleMainGroup(index: number): void {
-    this.groupedData[index].expanded = !this.groupedData[index].expanded;
+    this.paginatedData[index].expanded = !this.paginatedData[index].expanded;
     
     // Quand on ouvre/ferme le groupe, synchroniser tous les clients avec l'état du groupe
-    this.groupedData[index].clients.forEach(client => {
-      client.expanded = this.groupedData[index].expanded;
+    this.paginatedData[index].clients.forEach(client => {
+      client.expanded = this.paginatedData[index].expanded;
     });
   }
 
   toggleClientGroup(groupIndex: number, clientIndex: number): void {
-    this.groupedData[groupIndex].clients[clientIndex].expanded = 
-      !this.groupedData[groupIndex].clients[clientIndex].expanded;
+    this.paginatedData[groupIndex].clients[clientIndex].expanded = 
+      !this.paginatedData[groupIndex].clients[clientIndex].expanded;
   }
 
   toggleAllGroups(): void {
     this.allGroupsExpanded = !this.allGroupsExpanded;
-    this.groupedData.forEach(group => {
+    this.paginatedData.forEach(group => {
       group.expanded = this.allGroupsExpanded;
       group.clients.forEach(client => {
         client.expanded = this.allGroupsExpanded;
