@@ -2,16 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatSortModule, MatSort } from '@angular/material/sort';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 
 interface MissionData {
   numeroGroupe: string;
@@ -71,16 +62,7 @@ interface ColumnGroup {
     CommonModule, 
     HttpClientModule,
     FormsModule,
-    MatTableModule,
     MatPaginatorModule,
-    MatSortModule,
-    MatButtonModule,
-    MatIconModule,
-    MatExpansionModule,
-    MatCardModule,
-    MatProgressSpinnerModule,
-    MatButtonToggleModule,
-    MatCheckboxModule
   ],
   template: `
     <div class="dashboard-container">
@@ -92,89 +74,96 @@ interface ColumnGroup {
         <div class="column-controls">
           <h3>Affichage des colonnes :</h3>
           <div class="column-toggles">
-            <mat-checkbox 
+            <label 
               *ngFor="let group of columnGroups" 
-              [(ngModel)]="group.visible"
-              (change)="updateDisplayedColumns()">
+              class="column-toggle">
+              <input 
+                type="checkbox"
+                [(ngModel)]="group.visible"
+                (change)="updateDisplayedColumns()">
               {{ group.name }}
-            </mat-checkbox>
+            </label>
           </div>
         </div>
       </div>
 
-      <mat-card class="table-card">
-        <mat-card-header>
-          <mat-card-title>Missions ({{ getTotalMissions() }} au total, {{ groupedData.length }} groupes)</mat-card-title>
-        </mat-card-header>
+      <div class="table-card">
+        <div class="table-header">
+          <h2>Missions ({{ getTotalMissions() }} au total, {{ groupedData.length }} groupes)</h2>
+        </div>
         
-        <mat-card-content>
-          <div class="table-container">
-            <table mat-table [dataSource]="flatDataSource" matSort class="mission-table">
-              
-              <!-- Colonne Information -->
-              <ng-container matColumnDef="groupExpander">
-                <th mat-header-cell *matHeaderCellDef class="expander-header">Groupe</th>
-                <td mat-cell *matCellDef="let mission" class="expander-cell">
+        <div class="table-container">
+          <table class="mission-table">
+            <thead>
+              <tr>
+                <!-- Colonne Information -->
+                <th *ngIf="isColumnVisible('groupExpander')" class="expander-header">Groupe</th>
+                <th *ngIf="isColumnVisible('numeroGroupe')" class="info-header">N° Groupe</th>
+                <th *ngIf="isColumnVisible('nomGroupe')" class="info-header">Nom Groupe</th>
+                <th *ngIf="isColumnVisible('numeroClient')" class="info-header">N° Client</th>
+                <th *ngIf="isColumnVisible('nomClient')" class="info-header">Nom Client</th>
+                <th *ngIf="isColumnVisible('mission')" class="info-header">Mission</th>
+
+                <!-- Colonnes Avant Mission -->
+                <th *ngIf="isColumnVisible('avantMissionProgress')" class="avant-mission-header">Avant Mission (%)</th>
+                <th *ngIf="isColumnVisible('avantMissionTasks')" class="avant-mission-header">Tâches</th>
+
+                <!-- Colonnes Pendant Mission -->
+                <th *ngIf="isColumnVisible('pendantMissionProgress')" class="pendant-mission-header">Pendant Mission (%)</th>
+                <th *ngIf="isColumnVisible('pendantMissionTasks')" class="pendant-mission-header">Tâches</th>
+
+                <!-- Colonnes Fin Mission -->
+                <th *ngIf="isColumnVisible('finMissionProgress')" class="fin-mission-header">Fin Mission (%)</th>
+                <th *ngIf="isColumnVisible('finMissionTasks')" class="fin-mission-header">Tâches</th>
+
+                <!-- Colonne Progrès Global -->
+                <th *ngIf="isColumnVisible('overallProgress')" class="overall-header">Progrès Global</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mission of paginatedData" 
+                  [class.group-header-row]="mission.isGroupHeader"
+                  [class.mission-data-row]="!mission.isGroupHeader">
+                
+                <td *ngIf="isColumnVisible('groupExpander')" class="expander-cell">
                   <button 
                     *ngIf="mission.isGroupHeader"
-                    mat-icon-button
                     (click)="toggleGroup(mission.groupKey)"
                     class="group-toggle">
-                    <mat-icon>{{ getGroupExpanded(mission.groupKey) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    {{ getGroupExpanded(mission.groupKey) ? '▲' : '▼' }}
                   </button>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="numeroGroupe">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">N° Groupe</th>
-                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('numeroGroupe')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
                   <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.numeroGroupe }}</span>
                   <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroGroupe }}</span>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="nomGroupe">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Nom Groupe</th>
-                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('nomGroupe')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
                   <span *ngIf="mission.isGroupHeader" class="group-header-text">{{ mission.nomGroupe }} ({{ getGroupMissionCount(mission.groupKey) }} missions)</span>
                   <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomGroupe }}</span>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="numeroClient">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">N° Client</th>
-                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('numeroClient')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
                   <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.numeroClient }}</span>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="nomClient">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Nom Client</th>
-                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('nomClient')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
                   <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.nomClient }}</span>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="mission">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="info-header">Mission</th>
-                <td mat-cell *matCellDef="let mission" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('mission')" [class.group-header]="mission.isGroupHeader" [class.mission-row]="!mission.isGroupHeader">
                   <span *ngIf="!mission.isGroupHeader" class="mission-indent">{{ mission.mission }}</span>
                 </td>
-              </ng-container>
 
-              <!-- Colonnes Avant Mission -->
-              <ng-container matColumnDef="avantMissionProgress">
-                <th mat-header-cell *matHeaderCellDef class="avant-mission-header">Avant Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                <!-- Colonnes Avant Mission -->
+                <td *ngIf="isColumnVisible('avantMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.avantMission.percentage">
                     {{ mission.avantMission.percentage }}%
                   </div>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="avantMissionTasks">
-                <th mat-header-cell *matHeaderCellDef class="avant-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('avantMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.avantMission.lab" title="LAB">
                       {{ mission.avantMission.lab ? '✅' : '⏳' }}
@@ -193,21 +182,15 @@ interface ColumnGroup {
                     </span>
                   </div>
                 </td>
-              </ng-container>
 
-              <!-- Colonnes Pendant Mission -->
-              <ng-container matColumnDef="pendantMissionProgress">
-                <th mat-header-cell *matHeaderCellDef class="pendant-mission-header">Pendant Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                <!-- Colonnes Pendant Mission -->
+                <td *ngIf="isColumnVisible('pendantMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.pendantMission.percentage">
                     {{ mission.pendantMission.percentage }}%
                   </div>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="pendantMissionTasks">
-                <th mat-header-cell *matHeaderCellDef class="pendant-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('pendantMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.pendantMission.nog" title="NOG">
                       {{ mission.pendantMission.nog ? '✅' : '⏳' }}
@@ -223,21 +206,15 @@ interface ColumnGroup {
                     </span>
                   </div>
                 </td>
-              </ng-container>
 
-              <!-- Colonnes Fin Mission -->
-              <ng-container matColumnDef="finMissionProgress">
-                <th mat-header-cell *matHeaderCellDef class="fin-mission-header">Fin Mission (%)</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                <!-- Colonnes Fin Mission -->
+                <td *ngIf="isColumnVisible('finMissionProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="progress-circle" [attr.data-percentage]="mission.finMission.percentage">
                     {{ mission.finMission.percentage }}%
                   </div>
                 </td>
-              </ng-container>
 
-              <ng-container matColumnDef="finMissionTasks">
-                <th mat-header-cell *matHeaderCellDef class="fin-mission-header">Tâches</th>
-                <td mat-cell *matCellDef="let mission" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
+                <td *ngIf="isColumnVisible('finMissionTasks')" class="tasks-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="task-icons">
                     <span class="task-icon" [class.completed]="mission.finMission.ndsCr" title="NDS/CR">
                       {{ mission.finMission.ndsCr ? '✅' : '⏳' }}
@@ -253,48 +230,38 @@ interface ColumnGroup {
                     </span>
                   </div>
                 </td>
-              </ng-container>
 
-              <!-- Colonne Progrès Global -->
-              <ng-container matColumnDef="overallProgress">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="overall-header">Progrès Global</th>
-                <td mat-cell *matCellDef="let mission" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
+                <!-- Colonne Progrès Global -->
+                <td *ngIf="isColumnVisible('overallProgress')" class="percentage-cell" [class.group-header]="mission.isGroupHeader">
                   <div *ngIf="!mission.isGroupHeader" class="progress-circle large" [attr.data-percentage]="mission.overallProgress">
                     {{ mission.overallProgress }}%
                   </div>
                 </td>
-              </ng-container>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
-                  [class.group-header-row]="row.isGroupHeader"
-                  [class.mission-data-row]="!row.isGroupHeader"></tr>
-            </table>
-          </div>
-
-          <mat-paginator 
-            [pageSizeOptions]="[25, 50, 100]" 
-            [pageSize]="50"
-            showFirstLastButtons
-            aria-label="Sélectionner la page des missions">
-          </mat-paginator>
-        </mat-card-content>
-      </mat-card>
+        <mat-paginator 
+          [length]="flatData.length"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[25, 50, 100]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons
+          aria-label="Sélectionner la page des missions">
+        </mat-paginator>
+      </div>
     </div>
   `,
   styles: [`
     .dashboard-container {
       padding: 24px;
       background: #f8fafc;
-      height: calc(100vh - 80px);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      min-height: calc(100vh - 80px);
     }
 
     .dashboard-header {
       margin-bottom: 24px;
-      flex-shrink: 0;
     }
 
     .dashboard-header h1 {
@@ -330,41 +297,67 @@ interface ColumnGroup {
       flex-wrap: wrap;
     }
 
-    .table-card {
-      flex: 1;
+    .column-toggle {
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--gray-700);
     }
 
-    .table-card mat-card-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 0 !important;
+    .column-toggle input[type="checkbox"] {
+      margin: 0;
+    }
+
+    .table-card {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      border-radius: 8px 8px 0 0;
+    }
+
+    .table-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gray-800);
     }
 
     .table-container {
-      flex: 1;
       overflow: auto;
-      border: 1px solid var(--gray-200);
-      border-radius: 8px;
+      max-height: 600px;
     }
 
     .mission-table {
       width: 100%;
       background: white;
+      border-collapse: collapse;
     }
 
-    /* Expander column */
+    .mission-table th,
+    .mission-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+      text-align: left;
+    }
+
+    /* Headers avec couleurs par section */
     .expander-header {
       background: var(--gray-800) !important;
       color: white !important;
       font-weight: 600 !important;
       padding: 16px 12px !important;
       width: 60px !important;
-      border-right: 1px solid rgba(255,255,255,0.2) !important;
+      border-right: 1px solid rgba(255,255,255,0.2);
     }
 
     .expander-cell {
@@ -374,16 +367,26 @@ interface ColumnGroup {
     }
 
     .group-toggle {
+      background: none;
+      border: none;
       color: var(--primary-color);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
     }
 
-    /* Headers avec couleurs par section */
+    .group-toggle:hover {
+      background: rgba(34, 109, 104, 0.1);
+    }
+
     .info-header {
       background: var(--primary-dark) !important;
       color: white !important;
       font-weight: 600 !important;
       padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2) !important;
+      border-right: 1px solid rgba(255,255,255,0.2);
     }
 
     .avant-mission-header {
@@ -391,7 +394,7 @@ interface ColumnGroup {
       color: white !important;
       font-weight: 600 !important;
       padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2) !important;
+      border-right: 1px solid rgba(255,255,255,0.2);
     }
 
     .pendant-mission-header {
@@ -399,7 +402,7 @@ interface ColumnGroup {
       color: var(--primary-color) !important;
       font-weight: 600 !important;
       padding: 16px 12px !important;
-      border-right: 1px solid rgba(34, 109, 104, 0.2) !important;
+      border-right: 1px solid rgba(34, 109, 104, 0.2);
     }
 
     .fin-mission-header {
@@ -407,7 +410,7 @@ interface ColumnGroup {
       color: white !important;
       font-weight: 600 !important;
       padding: 16px 12px !important;
-      border-right: 1px solid rgba(255,255,255,0.2) !important;
+      border-right: 1px solid rgba(255,255,255,0.2);
     }
 
     .overall-header {
@@ -417,31 +420,24 @@ interface ColumnGroup {
       padding: 16px 12px !important;
     }
 
-    /* Cellules du tableau */
-    .mat-mdc-cell {
-      padding: 12px !important;
-      border-bottom: 1px solid var(--gray-100) !important;
-      font-size: 14px !important;
-    }
-
     .mission-data-row:hover {
-      background: var(--gray-50) !important;
+      background: var(--gray-50);
     }
 
     /* Styles pour les groupes */
     .group-header-row {
-      background: var(--primary-light) !important;
-      font-weight: 600 !important;
+      background: var(--primary-light);
+      font-weight: 600;
     }
 
     .group-header-row:hover {
-      background: rgba(100, 206, 199, 0.3) !important;
+      background: rgba(100, 206, 199, 0.3);
     }
 
     .group-header {
-      background: var(--primary-light) !important;
-      font-weight: 600 !important;
-      color: var(--primary-dark) !important;
+      background: var(--primary-light);
+      font-weight: 600;
+      color: var(--primary-dark);
     }
 
     .group-header-text {
@@ -459,8 +455,8 @@ interface ColumnGroup {
     }
 
     .percentage-cell {
-      text-align: center !important;
-      padding: 8px !important;
+      text-align: center;
+      padding: 8px;
     }
 
     .progress-circle {
@@ -508,8 +504,8 @@ interface ColumnGroup {
     }
 
     .tasks-cell {
-      text-align: center !important;
-      padding: 8px !important;
+      text-align: center;
+      padding: 8px;
     }
 
     .task-icons {
@@ -526,7 +522,7 @@ interface ColumnGroup {
     }
 
     /* Pagination */
-    mat-paginator {
+    ::ng-deep mat-paginator {
       border-top: 1px solid var(--gray-200);
       background: var(--gray-50);
     }
@@ -554,9 +550,10 @@ interface ColumnGroup {
         padding: 16px;
       }
       
-      .mat-mdc-cell {
-        padding: 8px !important;
-        font-size: 12px !important;
+      .mission-table th,
+      .mission-table td {
+        padding: 8px;
+        font-size: 12px;
       }
       
       .info-header,
@@ -564,21 +561,14 @@ interface ColumnGroup {
       .pendant-mission-header,
       .fin-mission-header,
       .overall-header {
-        padding: 12px 8px !important;
-        font-size: 12px !important;
+        padding: 12px 8px;
+        font-size: 12px;
       }
 
       .column-toggles {
         flex-direction: column;
         gap: 8px;
       }
-    }
-
-    /* Sticky header */
-    .mat-mdc-header-row {
-      position: sticky;
-      top: 0;
-      z-index: 10;
     }
   `]
 })
@@ -611,34 +601,25 @@ export class DashboardComponent implements OnInit {
     }
   ];
 
-  displayedColumns: string[] = [];
-  dataSource = new MatTableDataSource<FlatMissionData>();
-  flatDataSource = new MatTableDataSource<any>();
+  flatData: any[] = [];
+  paginatedData: any[] = [];
   groupedData: GroupedMissionData[] = [];
   expandedGroups: Set<string> = new Set();
+  
+  // Pagination
+  currentPage = 0;
+  pageSize = 50;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.updateDisplayedColumns();
     this.initializeDataFromApi();
   }
 
-  ngAfterViewInit(): void {
-    this.flatDataSource.paginator = this.paginator;
-    this.flatDataSource.sort = this.sort;
-  }
-
   updateDisplayedColumns(): void {
-    this.displayedColumns = [];
-    this.columnGroups.forEach(group => {
-      if (group.visible) {
-        this.displayedColumns.push(...group.columns);
-      }
-    });
+    this.updatePaginatedData();
   }
 
   initializeDataFromApi(): void {
@@ -817,9 +798,9 @@ export class DashboardComponent implements OnInit {
       )
     }));
 
-    this.dataSource.data = flatData;
     this.createGroupedData(flatData);
-    this.updateFlatDataSource();
+    this.updateFlatData();
+    this.updatePaginatedData();
   }
 
   private createGroupedData(missions: FlatMissionData[]): void {
@@ -847,8 +828,8 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  private updateFlatDataSource(): void {
-    const flatData: any[] = [];
+  private updateFlatData(): void {
+    this.flatData = [];
     
     this.groupedData.forEach(group => {
       // Add group header
@@ -857,12 +838,12 @@ export class DashboardComponent implements OnInit {
         isGroupHeader: true,
         groupKey: group.groupKey
       };
-      flatData.push(groupHeader);
+      this.flatData.push(groupHeader);
       
       // Add missions if group is expanded
       if (group.expanded) {
         group.missions.forEach(mission => {
-          flatData.push({
+          this.flatData.push({
             ...mission,
             isGroupHeader: false,
             groupKey: group.groupKey
@@ -870,8 +851,18 @@ export class DashboardComponent implements OnInit {
         });
       }
     });
-    
-    this.flatDataSource.data = flatData;
+  }
+
+  private updatePaginatedData(): void {
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedData = this.flatData.slice(startIndex, endIndex);
+  }
+
+  onPageChange(event: any): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePaginatedData();
   }
 
   toggleGroup(groupKey: string): void {
@@ -888,7 +879,8 @@ export class DashboardComponent implements OnInit {
       }
     });
     
-    this.updateFlatDataSource();
+    this.updateFlatData();
+    this.updatePaginatedData();
   }
 
   getGroupExpanded(groupKey: string): boolean {
@@ -901,7 +893,13 @@ export class DashboardComponent implements OnInit {
   }
 
   getTotalMissions(): number {
-    return this.dataSource.data.length;
+    return this.groupedData.reduce((total, group) => total + group.missions.length, 0);
+  }
+
+  isColumnVisible(columnName: string): boolean {
+    return this.columnGroups.some(group => 
+      group.visible && group.columns.includes(columnName)
+    );
   }
 
   private getTasksSummary(phase: any): string {
