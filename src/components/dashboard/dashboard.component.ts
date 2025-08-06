@@ -918,4 +918,3 @@ export class DashboardComponent implements OnInit {
     return Math.round(total / client.missions.length);
   }
 }
-}
