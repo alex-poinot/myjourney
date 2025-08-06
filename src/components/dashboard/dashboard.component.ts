@@ -820,34 +820,35 @@ export class DashboardComponent implements OnInit {
       return acc;
     }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
 
-    // Créer la structure finale avec double groupement
-    this.groupedData = Object.values(groupedByGroupe).map(group => {
-      // Grouper les missions par numeroClient
-      const clientGroups = group.missions.reduce((acc, mission) => {
-        const clientKey = mission.numeroClient;
-        if (!acc[clientKey]) {
-          acc[clientKey] = {
-            numeroClient: mission.numeroClient,
-            nomClient: mission.nomClient,
-            missions: [],
-            expanded: true
-          };
-        }
-        acc[clientKey].missions.push(mission);
-        return acc;
-      }, {} as { [key: string]: ClientGroup });
+      // Créer la structure finale avec double groupement
+      this.groupedData = Object.values(groupedByGroupe).map(group => {
+        // Grouper les missions par numeroClient
+        const clientGroups = group.missions.reduce((acc, mission) => {
+          const clientKey = mission.numeroClient;
+          if (!acc[clientKey]) {
+            acc[clientKey] = {
+              numeroClient: mission.numeroClient,
+              nomClient: mission.nomClient,
+              missions: [],
+              expanded: true
+            };
+          }
+          acc[clientKey].missions.push(mission);
+          return acc;
+        }, {} as { [key: string]: ClientGroup });
 
-      return {
-        numeroGroupe: group.numeroGroupe,
-        nomGroupe: group.nomGroupe,
-        clients: Object.values(clientGroups),
-        expanded: true
-      };
-    });
+        return {
+          numeroGroupe: group.numeroGroupe,
+          nomGroupe: group.nomGroupe,
+          clients: Object.values(clientGroups),
+          expanded: true
+        };
+      });
 
-    this.totalMissions = this.groupedData.reduce((total, group) => 
-      total + group.clients.reduce((clientTotal, client) => 
-        clientTotal + client.missions.length, 0), 0);
+      this.totalMissions = this.groupedData.reduce((total, group) => 
+        total + group.clients.reduce((clientTotal, client) => 
+          clientTotal + client.missions.length, 0), 0);
+    }
   }
 
   private updatePagination(): void {
