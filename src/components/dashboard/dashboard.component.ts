@@ -811,7 +811,7 @@ export class DashboardComponent implements OnInit {
       .subscribe((response) => {
         let data = response.data;
         
-        const missions: MissionData[] = data;
+        const realData: MissionData[] = data;
 
     // Grouper d'abord par numeroGroupe, puis par numeroClient
     const groupedByGroupe = realData.reduce((acc, mission) => {
