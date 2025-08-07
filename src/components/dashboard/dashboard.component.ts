@@ -718,6 +718,13 @@ interface GroupData {
       justify-content: center;
     }
 
+    .pagination-container {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .dashboard-header {
@@ -1108,5 +1115,4 @@ export class DashboardComponent implements OnInit {
     
     return Math.round(total / client.missions.length);
   }
-
 }
