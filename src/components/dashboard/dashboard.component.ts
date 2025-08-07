@@ -1024,7 +1024,7 @@ export class DashboardComponent implements OnInit {
   startIndex = 0;
   endIndex = 0;
 
-  modalData: ModalData = {
+  public modalData: ModalData = {
     isOpen: false,
     columnName: '',
     missionId: '',
@@ -1346,7 +1346,7 @@ export class DashboardComponent implements OnInit {
     return Math.round(total / client.missions.length);
   }
 
-  openStatusModal(columnName: string, missionId: string, currentStatus: boolean): void {
+  public openStatusModal(columnName: string, missionId: string, currentStatus: boolean): void {
     this.modalData = {
       isOpen: true,
       columnName: columnName,
@@ -1356,23 +1356,23 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  closeModal(): void {
+  public closeModal(): void {
     this.modalData.isOpen = false;
     this.modalData.selectedFile = null;
   }
 
-  onFileSelected(event: Event): void {
+  public onFileSelected(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length > 0) {
       this.modalData.selectedFile = target.files[0];
     }
   }
 
-  removeFile(): void {
+  public removeFile(): void {
     this.modalData.selectedFile = null;
   }
 
-  saveStatus(): void {
+  public saveStatus(): void {
     // Ici vous pouvez ajouter la logique pour sauvegarder le statut
     console.log('Sauvegarde:', {
       columnName: this.modalData.columnName,
