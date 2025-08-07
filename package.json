@@ -16,6 +16,8 @@
     "@angular/material": "^20.1.4",
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "@azure/msal-angular": "^4.0.17",
+    "@azure/msal-browser": "^4.19.0",
     "@types/jspdf": "^2.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",

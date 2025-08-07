@@ -1,0 +1,32 @@
+import { Configuration, LogLevel } from '@azure/msal-browser';
+
+export const msalConfig: Configuration = {
+  auth: {
+    clientId: 'YOUR_CLIENT_ID', // Remplacez par votre Client ID Azure AD
+    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Remplacez par votre Tenant ID
+    redirectUri: window.location.origin,
+    postLogoutRedirectUri: window.location.origin
+  },
+  cache: {
+    cacheLocation: 'localStorage',
+    storeAuthStateInCookie: false
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback: (level: LogLevel, message: string) => {
+        console.log(message);
+      },
+      logLevel: LogLevel.Info,
+      piiLoggingEnabled: false
+    }
+  }
+};
+
+export const loginRequest = {
+  scopes: ['User.Read', 'profile', 'openid', 'email']
+};
+
+export const graphConfig = {
+  graphMeEndpoint: 'https://graph.microsoft.com/v1.0/me',
+  graphPhotoEndpoint: 'https://graph.microsoft.com/v1.0/me/photo/$value'
+};
