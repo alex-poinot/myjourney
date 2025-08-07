@@ -708,7 +708,7 @@ interface GroupData {
     .page-numbers {
       display: flex;
       gap: 4px;
-      min-width: 280px; /* Largeur fixe pour 6 boutons + gaps */
+      min-width: 320px; /* Largeur fixe pour 7 boutons + gaps */
       justify-content: center;
     }
 
@@ -907,33 +907,33 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisiblePages(): (number | string)[] {
-    // Toujours retourner exactement 6 éléments pour un affichage constant
+    // Toujours retourner exactement 7 éléments pour un affichage constant
     const pages: (number | string)[] = [];
     
-    if (this.totalPages <= 6) {
-      // Si 6 pages ou moins, afficher toutes les pages et compléter avec des espaces vides
+    if (this.totalPages <= 7) {
+      // Si 7 pages ou moins, afficher toutes les pages et compléter avec des espaces vides
       for (let i = 1; i <= this.totalPages; i++) {
         pages.push(i);
       }
-      // Compléter avec des espaces vides pour avoir toujours 6 cases
-      while (pages.length < 6) {
+      // Compléter avec des espaces vides pour avoir toujours 7 cases
+      while (pages.length < 7) {
         pages.push('');
       }
       return pages;
     }
 
-    // Plus de 6 pages : logique avec ellipses
+    // Plus de 7 pages : logique avec ellipses
     pages.push(1);
     
-    if (this.currentPage <= 4) {
-      // Début : 1, 2, 3, 4, ..., dernière
-      pages.push(2, 3, 4, '...', this.totalPages);
-    } else if (this.currentPage >= this.totalPages - 3) {
-      // Fin : 1, ..., avant-3, avant-2, avant-1, dernière
-      pages.push('...', this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages);
+    if (this.currentPage <= 5) {
+      // Début : 1, 2, 3, 4, 5, ..., dernière
+      pages.push(2, 3, 4, 5, '...', this.totalPages);
+    } else if (this.currentPage >= this.totalPages - 4) {
+      // Fin : 1, ..., avant-4, avant-3, avant-2, avant-1, dernière
+      pages.push('...', this.totalPages - 4, this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages);
     } else {
-      // Milieu : 1, ..., courante, courante+1, ..., dernière
-      pages.push('...', this.currentPage, this.currentPage + 1, '...', this.totalPages);
+      // Milieu : 1, ..., courante-1, courante, courante+1, ..., dernière
+      pages.push('...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', this.totalPages);
     }
     
     return pages;
