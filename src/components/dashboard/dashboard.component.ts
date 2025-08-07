@@ -299,34 +299,40 @@ interface GroupData {
       </div>
 
       <div class="pagination-footer">
-        <div class="pagination-controls">
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === 1"
-            (click)="goToPage(currentPage - 1)">
-            ← Précédent
-          </button>
-          
-          <div class="page-numbers">
-            <ng-container *ngFor="let page of getVisiblePages()">
-              <button 
-                *ngIf="page !== '...' && page !== ''"
-                class="page-btn"
-                [class.active]="page === currentPage"
-                (click)="goToPage(+page)">
-                {{ page }}
-              </button>
-              <div *ngIf="page === '...'" class="page-btn ellipsis">...</div>
-              <div *ngIf="page === ''" class="page-btn empty"></div>
-            </ng-container>
+        <div class="pagination-container">
+          <div class="pagination-controls">
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === 1"
+              (click)="goToPage(currentPage - 1)">
+              ← Précédent
+            </button>
+            
+            <div class="page-numbers">
+              <ng-container *ngFor="let page of getVisiblePages()">
+                <button 
+                  *ngIf="page !== '...' && page !== ''"
+                  class="page-btn"
+                  [class.active]="page === currentPage"
+                  (click)="goToPage(+page)">
+                  {{ page }}
+                </button>
+                <span *ngIf="page === '...'" class="page-btn ellipsis">...</span>
+                <span *ngIf="page === ''" class="page-btn empty"></span>
+              </ng-container>
+            </div>
+            
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === totalPages"
+              (click)="goToPage(currentPage + 1)">
+              Suivant →
+            </button>
           </div>
           
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === totalPages"
-            (click)="goToPage(currentPage + 1)">
-            Suivant →
-          </button>
+          <div class="mission-count-display">
+            {{ startIndex + 1 }}-{{ endIndex }} sur {{ totalMissions }} missions
+          </div>
         </div>
       </div>
     </div>
