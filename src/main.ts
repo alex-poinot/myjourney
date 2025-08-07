@@ -1,9 +1,17 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { msalConfig } from './auth/auth.config';
+import { AuthService } from './services/auth.service';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NogEditorComponent } from './components/nog-editor/nog-editor.component';
+
+export function MSALInstanceFactory(): PublicClientApplication {
+  return new PublicClientApplication(msalConfig);
+}
 
 @Component({
   selector: 'app-root',
