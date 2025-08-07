@@ -714,7 +714,6 @@ interface GroupData {
     .page-numbers {
       display: flex;
       gap: 4px;
-      min-width: 320px; /* Largeur fixe pour 7 boutons + gaps */
       justify-content: center;
     }
 
@@ -929,17 +928,12 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisiblePages(): (number | string)[] {
-    // Toujours retourner exactement 7 éléments pour un affichage constant
     const pages: (number | string)[] = [];
     
     if (this.totalPages <= 7) {
-      // Si 7 pages ou moins, afficher toutes les pages et compléter avec des espaces vides
+      // Si 7 pages ou moins, afficher seulement les pages existantes
       for (let i = 1; i <= this.totalPages; i++) {
         pages.push(i);
-      }
-      // Compléter avec des espaces vides pour avoir toujours 7 cases
-      while (pages.length < 7) {
-        pages.push('');
       }
       return pages;
     }
