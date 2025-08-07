@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { APP_INITIALIZER } from '@angular/core';
-import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
+import { MSAL_INSTANCE, MsalService, MsalBroadcastService } from '@azure/msal-angular';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig } from './auth/auth.config';
 import { AuthService } from './services/auth.service';
@@ -92,6 +92,7 @@ bootstrapApplication(AppComponent, {
       useFactory: MSALInstanceFactory
     },
     MsalService,
+    MsalBroadcastService,
     {
       provide: APP_INITIALIZER,
       useFactory: initializeMsal,
