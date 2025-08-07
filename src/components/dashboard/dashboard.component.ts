@@ -532,13 +532,14 @@ interface ModalData {
     .group-cell {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 0.5vw;
     }
 
     .client-row {
       padding-left: 16px;
       display: flex;
       align-items: center;
+      gap: 0.5vw;
     }
     
     .column-group-header.information {
@@ -720,6 +721,12 @@ interface ModalData {
       padding: 4px;
       border-radius: 4px;
       transition: background-color 0.2s;
+    }
+
+    .group-info {
+      display: flex;
+      gap: 0.5vw;
+      align-items: center;
     }
 
     .collapse-btn:hover {
@@ -1036,7 +1043,7 @@ export class DashboardComponent implements OnInit {
   allMissions: MissionData[] = [];
   completeGroupedData: GroupData[] = [];
   currentPage = 1;
-  itemsPerPage = 180;
+  itemsPerPage = 50;
   totalMissions = 0;
   totalPages = 0;
   startIndex = 0;
