@@ -220,27 +220,27 @@ interface ModalData {
                       {{ mission.avantMission.percentage }}%
                     </div>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('LAB', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.lab)">
                     <span class="status-icon" [class.completed]="mission.avantMission.lab">
                       {{ mission.avantMission.lab ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('Conflit Check', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.conflitCheck)">
                     <span class="status-icon" [class.completed]="mission.avantMission.conflitCheck">
                       {{ mission.avantMission.conflitCheck ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('QAC', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.qac)">
                     <span class="status-icon" [class.completed]="mission.avantMission.qac">
                       {{ mission.avantMission.qac ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('QAM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.qam)">
                     <span class="status-icon" [class.completed]="mission.avantMission.qam">
                       {{ mission.avantMission.qam ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!avantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('LDM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.ldm)">
                     <span class="status-icon" [class.completed]="mission.avantMission.ldm">
                       {{ mission.avantMission.ldm ? '✅' : '⏳' }}
                     </span>
@@ -252,22 +252,22 @@ interface ModalData {
                       {{ mission.pendantMission.percentage }}%
                     </div>
                   </td>
-                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('NOG', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.nog)">
                     <span class="status-icon" [class.completed]="mission.pendantMission.nog">
                       {{ mission.pendantMission.nog ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Checklist', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.checklist)">
                     <span class="status-icon" [class.completed]="mission.pendantMission.checklist">
                       {{ mission.pendantMission.checklist ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Révision', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.revision)">
                     <span class="status-icon" [class.completed]="mission.pendantMission.revision">
                       {{ mission.pendantMission.revision ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!pendantMissionCollapsed" class="status-cell">
+                  <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Supervision', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.supervision)">
                     <span class="status-icon" [class.completed]="mission.pendantMission.supervision">
                       {{ mission.pendantMission.supervision ? '✅' : '⏳' }}
                     </span>
@@ -279,22 +279,22 @@ interface ModalData {
                       {{ mission.finMission.percentage }}%
                     </div>
                   </td>
-                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                  <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('NDS/CR Mission', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.ndsCr)">
                     <span class="status-icon" [class.completed]="mission.finMission.ndsCr">
                       {{ mission.finMission.ndsCr ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                  <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('QMM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.qmm)">
                     <span class="status-icon" [class.completed]="mission.finMission.qmm">
                       {{ mission.finMission.qmm ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                  <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('Plaquette', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.plaquette)">
                     <span class="status-icon" [class.completed]="mission.finMission.plaquette">
                       {{ mission.finMission.plaquette ? '✅' : '⏳' }}
                     </span>
                   </td>
-                  <td *ngIf="!finMissionCollapsed" class="status-cell">
+                  <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('Restitution communication client', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.restitution)">
                     <span class="status-icon" [class.completed]="mission.finMission.restitution">
                       {{ mission.finMission.restitution ? '✅' : '⏳' }}
                     </span>
