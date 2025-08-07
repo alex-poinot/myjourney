@@ -47,6 +47,14 @@ interface GroupData {
   expanded: boolean;
 }
 
+interface ModalData {
+  isOpen: boolean;
+  columnName: string;
+  missionId: string;
+  currentStatus: boolean;
+  selectedFile: File | null;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -333,6 +341,43 @@ interface GroupData {
               Suivant →
             </button>
           </div>         
+        </div>
+      </div>
+
+      <!-- Modal pour les statuts -->
+      <div *ngIf="modalData.isOpen" class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>{{ modalData.columnName }}</h3>
+            <button class="modal-close" (click)="closeModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="modalData.currentStatus"
+                  class="status-checkbox">
+                <span class="checkbox-text">Tâche terminée</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label for="file-input">Fichier joint :</label>
+              <input 
+                type="file" 
+                id="file-input"
+                (change)="onFileSelected($event)"
+                class="file-input">
+              <div *ngIf="modalData.selectedFile" class="file-info">
+                <span class="file-name">{{ modalData.selectedFile.name }}</span>
+                <button class="remove-file" (click)="removeFile()">×</button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+            <button class="btn-save" (click)="saveStatus()">Enregistrer</button>
+          </div>
         </div>
       </div>
     </div>
@@ -635,6 +680,12 @@ interface GroupData {
 
     .status-cell {
       padding: 8px !important;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .status-cell:hover {
+      background: rgba(34, 109, 104, 0.1);
     }
 
     .status-icon {
@@ -761,6 +812,183 @@ interface GroupData {
       }
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow-xl);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-200);
+      background: var(--primary-color);
+      color: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .status-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .checkbox-text {
+      color: var(--gray-700);
+    }
+
+    .file-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px dashed var(--gray-300);
+      border-radius: 8px;
+      background: var(--gray-50);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-input:hover {
+      border-color: var(--primary-color);
+      background: rgba(34, 109, 104, 0.05);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--gray-100);
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+
+    .remove-file {
+      background: var(--error-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .remove-file:hover {
+      background: #dc2626;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .btn-cancel {
+      padding: 10px 20px;
+      border: 1px solid var(--gray-300);
+      background: white;
+      color: var(--gray-700);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-400);
+    }
+
+    .btn-save {
+      padding: 10px 20px;
+      border: none;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-save:hover {
+      background: var(--primary-dark);
+    }
+
     @media (max-width: 1200px) {
       .mission-table {
         font-size: 12px;
@@ -795,6 +1023,14 @@ export class DashboardComponent implements OnInit {
   totalPages = 0;
   startIndex = 0;
   endIndex = 0;
+
+  modalData: ModalData = {
+    isOpen: false,
+    columnName: '',
+    missionId: '',
+    currentStatus: false,
+    selectedFile: null
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -1108,5 +1344,44 @@ export class DashboardComponent implements OnInit {
     }, 0);
     
     return Math.round(total / client.missions.length);
+  }
+
+  openStatusModal(columnName: string, missionId: string, currentStatus: boolean): void {
+    this.modalData = {
+      isOpen: true,
+      columnName: columnName,
+      missionId: missionId,
+      currentStatus: currentStatus,
+      selectedFile: null
+    };
+  }
+
+  closeModal(): void {
+    this.modalData.isOpen = false;
+    this.modalData.selectedFile = null;
+  }
+
+  onFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      this.modalData.selectedFile = target.files[0];
+    }
+  }
+
+  removeFile(): void {
+    this.modalData.selectedFile = null;
+  }
+
+  saveStatus(): void {
+    // Ici vous pouvez ajouter la logique pour sauvegarder le statut
+    console.log('Sauvegarde:', {
+      columnName: this.modalData.columnName,
+      missionId: this.modalData.missionId,
+      status: this.modalData.currentStatus,
+      file: this.modalData.selectedFile
+    });
+    
+    // Fermer le modal après sauvegarde
+    this.closeModal();
   }
 }
