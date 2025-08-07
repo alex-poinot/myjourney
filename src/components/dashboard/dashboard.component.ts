@@ -907,6 +907,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisiblePages(): number[] {
+  getVisiblePages(): (number | string)[] {
     // Toujours retourner exactement 6 éléments pour un affichage constant
     const pages: (number | string)[] = [];
     
