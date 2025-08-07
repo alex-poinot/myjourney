@@ -10,6 +10,7 @@ import { AuthService } from './services/auth.service';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NogEditorComponent } from './components/nog-editor/nog-editor.component';
+import { LoginComponent } from './components/login/login.component';
 
 export function MSALInstanceFactory(): PublicClientApplication {
   return new PublicClientApplication(msalConfig);
@@ -30,10 +31,17 @@ export function initializeMsal(msalService: MsalService): () => Promise<void> {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, DashboardComponent, NogEditorComponent],
+  imports: [CommonModule, NavbarComponent, DashboardComponent, NogEditorComponent, LoginComponent],
   template: `
-    <div class="app-container">
-      <app-navbar (tabChange)="onTabSelected($event)"></app-navbar>
+    <!-- Page de connexion si non authentifié -->
+    <app-login *ngIf="!isAuthenticated"></app-login>
+    
+    <!-- Application principale si authentifié -->
+    <div class="app-container" *ngIf="isAuthenticated">
+      <app-navbar 
+        [activeTab]="currentTab"
+        (tabChange)="onTabSelected($event)">
+      </app-navbar>
       <main class="main-content">
         <app-dashboard *ngIf="currentTab === 'dashboard'"></app-dashboard>
         <app-nog-editor *ngIf="currentTab === 'NOG'"></app-nog-editor>
@@ -78,6 +86,14 @@ export function initializeMsal(msalService: MsalService): () => Promise<void> {
 })
 export class AppComponent {
   currentTab = 'dashboard';
+  isAuthenticated = false;
+
+  constructor(private authService: AuthService) {
+    // Écouter les changements d'état d'authentification
+    this.authService.isAuthenticated$.subscribe(authenticated => {
+      this.isAuthenticated = authenticated;
+    });
+  }
 
   onTabSelected(tab: string) {
     this.currentTab = tab;

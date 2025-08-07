@@ -36,7 +36,10 @@ export class AuthService {
     if (accounts.length > 0) {
       this.msalService.instance.setActiveAccount(accounts[0]);
       this.isAuthenticatedSubject.next(true);
-      this.loadUserProfile();
+      // Charger le profil utilisateur de manière asynchrone
+      this.loadUserProfile().catch(error => {
+        console.error('Erreur lors du chargement du profil:', error);
+      });
     }
   }
 

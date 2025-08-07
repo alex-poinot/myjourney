@@ -304,7 +304,16 @@ export class NavbarComponent {
   constructor(private authService: AuthService) {
     this.authService.userProfile$.subscribe(user => {
       this.currentUser = user;
+      // Charger la photo de profil si elle n'est pas encore chargée
+      if (user && !user.photoUrl) {
+        this.loadUserPhoto();
+      }
     });
+  }
+
+  private async loadUserPhoto(): Promise<void> {
+    // Cette méthode sera appelée automatiquement par AuthService
+    // lors du chargement du profil utilisateur
   }
 
   toggleGroup(group: TabGroup): void {
