@@ -741,6 +741,15 @@ interface GroupData {
         justify-content: center;
       }
       
+      .pagination-container {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .mission-count-display {
+        text-align: center;
+      }
+      
       .page-numbers {
         display: none;
       }
