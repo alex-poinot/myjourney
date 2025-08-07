@@ -1,6 +1,7 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig } from './auth/auth.config';
@@ -72,6 +73,7 @@ export class AppComponent {
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideHttpClient(),
     {
       provide: MSAL_INSTANCE,
       useFactory: MSALInstanceFactory

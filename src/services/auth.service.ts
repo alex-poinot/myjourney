@@ -65,7 +65,7 @@ export class AuthService {
 
       // Acquérir un token pour Microsoft Graph
       const tokenResponse = await firstValueFrom(this.msalService.acquireTokenSilent({
-        ...loginRequest,
+        scopes: loginRequest.scopes,
         account: account
       }));
 
