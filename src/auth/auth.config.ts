@@ -2,7 +2,7 @@ import { Configuration, LogLevel } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: 'YOUR_CLIENT_ID', // Remplacez par votre Client ID Azure AD
+    clientId: '634d3680-46b5-48e4-bdae-b7c6ed6b218a', // Remplacez par votre Client ID Azure AD
     authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Remplacez par votre Tenant ID
     redirectUri: window.location.origin,
     postLogoutRedirectUri: window.location.origin
