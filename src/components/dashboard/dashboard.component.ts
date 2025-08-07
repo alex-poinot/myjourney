@@ -303,24 +303,21 @@ interface GroupData {
           <button 
             class="pagination-btn" 
             [disabled]="currentPage === 1"
-            (click)="goToPage(1)">
-            ← Première
-          </button>
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === 1"
             (click)="goToPage(currentPage - 1)">
             ← Précédent
           </button>
           
           <div class="page-numbers">
-            <button 
-              *ngFor="let page of getVisiblePages()" 
-              class="page-btn"
-              [class.active]="page === currentPage"
-              (click)="goToPage(page)">
-              {{ page }}
-            </button>
+            <ng-container *ngFor="let page of getVisiblePages(); let i = index">
+              <button 
+                *ngIf="page !== '...'"
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)">
+                {{ page }}
+              </button>
+              <span *ngIf="page === '...'" class="pagination-ellipsis">...</span>
+            </ng-container>
           </div>
           
           <button 
@@ -328,12 +325,6 @@ interface GroupData {
             [disabled]="currentPage === totalPages"
             (click)="goToPage(currentPage + 1)">
             Suivant →
-          </button>
-          <button 
-            class="pagination-btn" 
-            [disabled]="currentPage === totalPages"
-            (click)="goToPage(totalPages)">
-            Dernière →
           </button>
         </div>
       </div>
@@ -697,6 +688,14 @@ interface GroupData {
       border-color: var(--primary-color);
     }
 
+    .pagination-ellipsis {
+      padding: 8px 4px;
+      color: var(--gray-500);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .dashboard-header {
@@ -892,21 +891,44 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisiblePages(): number[] {
-    const pages: number[] = [];
-    const maxVisible = 5;
+    if (this.totalPages <= 5) {
+      // Si 5 pages ou moins, afficher toutes les pages
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
     
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
+    // Toujours afficher la première page
+    pages.push(1);
     
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
+    if (this.currentPage <= 3) {
+      // Si on est près du début : 1, 2, 3, ..., dernière
+      pages.push(2, 3);
+      if (this.totalPages > 4) {
+        pages.push('...');
+      }
+      if (this.totalPages > 3) {
+        pages.push(this.totalPages);
+      }
+    } else if (this.currentPage >= this.totalPages - 2) {
+      // Si on est près de la fin : 1, ..., avant-dernière-1, avant-dernière, dernière
+      if (this.totalPages > 4) {
+        pages.push('...');
+      }
+      for (let i = Math.max(2, this.totalPages - 2); i <= this.totalPages; i++) {
+        if (!pages.includes(i)) {
+          pages.push(i);
+        }
+      }
+    } else {
+      // Au milieu : 1, ..., courante-1, courante, courante+1, ..., dernière
+      pages.push('...');
+      pages.push(this.currentPage - 1, this.currentPage, this.currentPage + 1);
+      pages.push('...');
+      pages.push(this.totalPages);
     }
     
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
+    return pages as number[];
   }
 
   toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
