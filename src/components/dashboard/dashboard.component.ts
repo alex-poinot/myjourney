@@ -1092,17 +1092,4 @@ export class DashboardComponent implements OnInit {
     return Math.round(total / client.missions.length);
   }
 
-  toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
-    switch (group) {
-      case 'avantMission':
-        this.avantMissionCollapsed = !this.avantMissionCollapsed;
-        break;
-      case 'pendantMission':
-        this.pendantMissionCollapsed = !this.pendantMissionCollapsed;
-        break;
-      case 'finMission':
-        this.finMissionCollapsed = !this.finMissionCollapsed;
-        break;
-    }
-  }
 }
