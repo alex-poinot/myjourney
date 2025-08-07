@@ -308,15 +308,16 @@ interface GroupData {
           </button>
           
           <div class="page-numbers">
-            <ng-container *ngFor="let page of getVisiblePages(); let i = index">
+            <ng-container *ngFor="let page of getVisiblePages()">
               <button 
-                *ngIf="page !== '...'"
+                *ngIf="page !== '...' && page !== ''"
                 class="page-btn"
                 [class.active]="page === currentPage"
                 (click)="goToPage(page)">
                 {{ page }}
               </button>
-              <span *ngIf="page === '...'" class="pagination-ellipsis">...</span>
+              <div *ngIf="page === '...'" class="page-btn ellipsis">...</div>
+              <div *ngIf="page === ''" class="page-btn empty"></div>
             </ng-container>
           </div>
           
@@ -688,12 +689,27 @@ interface GroupData {
       border-color: var(--primary-color);
     }
 
-    .pagination-ellipsis {
-      padding: 8px 4px;
+    .page-btn.ellipsis {
+      background: var(--gray-100);
       color: var(--gray-500);
-      font-weight: 500;
+      border-color: var(--gray-200);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .page-btn.empty {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .page-numbers {
       display: flex;
-      align-items: center;
+      gap: 4px;
+      min-width: 280px; /* Largeur fixe pour 6 boutons + gaps */
+      justify-content: center;
     }
 
     /* Responsive */
@@ -891,44 +907,36 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisiblePages(): number[] {
-    if (this.totalPages <= 5) {
-      // Si 5 pages ou moins, afficher toutes les pages
-      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-    }
-
+    // Toujours retourner exactement 6 éléments pour un affichage constant
     const pages: (number | string)[] = [];
     
-    // Toujours afficher la première page
+    if (this.totalPages <= 6) {
+      // Si 6 pages ou moins, afficher toutes les pages et compléter avec des espaces vides
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+      // Compléter avec des espaces vides pour avoir toujours 6 cases
+      while (pages.length < 6) {
+        pages.push('');
+      }
+      return pages;
+    }
+
+    // Plus de 6 pages : logique avec ellipses
     pages.push(1);
     
-    if (this.currentPage <= 3) {
-      // Si on est près du début : 1, 2, 3, ..., dernière
-      pages.push(2, 3);
-      if (this.totalPages > 4) {
-        pages.push('...');
-      }
-      if (this.totalPages > 3) {
-        pages.push(this.totalPages);
-      }
-    } else if (this.currentPage >= this.totalPages - 2) {
-      // Si on est près de la fin : 1, ..., avant-dernière-1, avant-dernière, dernière
-      if (this.totalPages > 4) {
-        pages.push('...');
-      }
-      for (let i = Math.max(2, this.totalPages - 2); i <= this.totalPages; i++) {
-        if (!pages.includes(i)) {
-          pages.push(i);
-        }
-      }
+    if (this.currentPage <= 4) {
+      // Début : 1, 2, 3, 4, ..., dernière
+      pages.push(2, 3, 4, '...', this.totalPages);
+    } else if (this.currentPage >= this.totalPages - 3) {
+      // Fin : 1, ..., avant-3, avant-2, avant-1, dernière
+      pages.push('...', this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages);
     } else {
-      // Au milieu : 1, ..., courante-1, courante, courante+1, ..., dernière
-      pages.push('...');
-      pages.push(this.currentPage - 1, this.currentPage, this.currentPage + 1);
-      pages.push('...');
-      pages.push(this.totalPages);
+      // Milieu : 1, ..., courante, courante+1, ..., dernière
+      pages.push('...', this.currentPage, this.currentPage + 1, '...', this.totalPages);
     }
     
-    return pages as number[];
+    return pages;
   }
 
   toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
