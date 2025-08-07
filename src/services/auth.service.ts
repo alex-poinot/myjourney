@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 import { AuthenticationResult, AccountInfo } from '@azure/msal-browser';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { loginRequest, graphConfig } from '../auth/auth.config';
 
@@ -42,7 +42,7 @@ export class AuthService {
 
   async login(): Promise<void> {
     try {
-      const result: AuthenticationResult = await this.msalService.loginPopup(loginRequest);
+      const result: AuthenticationResult = await firstValueFrom(this.msalService.loginPopup(loginRequest));
       this.msalService.instance.setActiveAccount(result.account);
       this.isAuthenticatedSubject.next(true);
       await this.loadUserProfile();
@@ -64,10 +64,10 @@ export class AuthService {
       if (!account) return;
 
       // Acquérir un token pour Microsoft Graph
-      const tokenResponse = await this.msalService.acquireTokenSilent({
+      const tokenResponse = await firstValueFrom(this.msalService.acquireTokenSilent({
         ...loginRequest,
         account: account
-      });
+      }));
 
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${tokenResponse.accessToken}`
