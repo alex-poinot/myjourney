@@ -80,4 +80,3 @@ bootstrapApplication(AppComponent, {
     AuthService
   ]
 });
-bootstrapApplication(AppComponent);
