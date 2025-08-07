@@ -938,16 +938,18 @@ export class DashboardComponent implements OnInit {
     }
 
     // Plus de 7 pages : logique avec ellipses
+    // Toujours inclure la page 1
     pages.push(1);
     
-    if (this.currentPage <= 5) {
+    if (this.currentPage <= 3) {
       // Début : 1, 2, 3, 4, 5, ..., dernière
       pages.push(2, 3, 4, 5, '...', this.totalPages);
-    } else if (this.currentPage >= this.totalPages - 4) {
+    } else if (this.currentPage >= this.totalPages - 2) {
       // Fin : 1, ..., avant-4, avant-3, avant-2, avant-1, dernière
       pages.push('...', this.totalPages - 4, this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages);
     } else {
-      // Milieu : 1, ..., courante-1, courante, courante+1, ..., dernière
+      // Milieu : toujours afficher page-1, page, page+1
+      // Format : 1, ..., courante-1, courante, courante+1, ..., dernière
       pages.push('...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', this.totalPages);
     }
     
