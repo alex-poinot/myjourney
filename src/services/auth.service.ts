@@ -45,10 +45,9 @@ export class AuthService {
 
   async login(): Promise<void> {
     try {
-      const result: AuthenticationResult = await firstValueFrom(this.msalService.loginPopup(loginRequest));
-      this.msalService.instance.setActiveAccount(result.account);
-      this.isAuthenticatedSubject.next(true);
-      await this.loadUserProfile();
+      await firstValueFrom(this.msalService.loginRedirect(loginRequest));
+      // Note: loginRedirect will redirect the page, so the code below won't execute
+      // The authentication status will be handled in checkAuthenticationStatus() after redirect
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
