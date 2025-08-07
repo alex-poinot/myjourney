@@ -65,7 +65,8 @@ interface ModalData {
         <h1>Tableau de bord des missions</h1>
         <div class="header-controls">
           <button class="expand-all-btn" (click)="toggleAllGroups()">
-            {{ allGroupsExpanded ? '📁 Réduire tout' : '📂 Développer tout' }}
+            <i class="fas" [ngClass]="allGroupsExpanded ? 'fa-folder-minus' : 'fa-folder-plus'"></i>
+            {{ allGroupsExpanded ? 'Réduire tout' : 'Développer tout' }}
           </button>
         </div>
       </div>
@@ -86,21 +87,21 @@ interface ModalData {
               <!-- Groupe Avant la mission -->
               <th [attr.colspan]="avantMissionCollapsed ? 1 : 6" class="column-group-header avant-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('avantMission')">
-                  {{ avantMissionCollapsed ? '▶' : '▼' }}
+                  <i class="fas" [ngClass]="avantMissionCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'"></i>
                 </button>
                 Avant la mission
               </th>
               <!-- Groupe Pendant la mission -->
               <th [attr.colspan]="pendantMissionCollapsed ? 1 : 5" class="column-group-header pendant-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('pendantMission')">
-                  {{ pendantMissionCollapsed ? '▶' : '▼' }}
+                  <i class="fas" [ngClass]="pendantMissionCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'"></i>
                 </button>
                 Pendant la mission
               </th>
               <!-- Groupe Fin de mission -->
               <th [attr.colspan]="finMissionCollapsed ? 1 : 5" class="column-group-header fin-mission">
                 <button class="collapse-btn" (click)="toggleColumnGroup('finMission')">
-                  {{ finMissionCollapsed ? '▶' : '▼' }}
+                  <i class="fas" [ngClass]="finMissionCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'"></i>
                 </button>
                 Fin de mission
               </th>
@@ -150,12 +151,14 @@ interface ModalData {
                   <div class="group-cell">
                     <div class="collapse-btn-container">
                       <button class="collapse-btn">
-                        {{ group.expanded ? '▼' : '▶' }}
+                        <i class="fas" [ngClass]="group.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                       </button>
                     </div>
                     <div class="group-info">
                       <strong>{{ group.numeroGroupe }} - {{ group.nomGroupe }}</strong>
-                      {{ getTotalMissionsInGroup(group) }} mission(s) - {{ getTotalClientsInGroup(group) }} client(s) - Avancement moyen: {{ getMainGroupAverage(group) }}%
+                      <i class="fas fa-tasks"></i> {{ getTotalMissionsInGroup(group) }} mission(s) - 
+                      <i class="fas fa-users"></i> {{ getTotalClientsInGroup(group) }} client(s) - 
+                      <i class="fas fa-chart-line"></i> Avancement moyen: {{ getMainGroupAverage(group) }}%
                     </div>
                   </div>
                 </td>
@@ -171,10 +174,12 @@ interface ModalData {
                   <td class="client-cell" colspan="5">
                     <div class="client-row">
                       <button class="collapse-btn">
-                        {{ client.expanded ? '▼' : '▶' }}
+                        <i class="fas" [ngClass]="client.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                       </button>
                       <strong>{{ client.numeroClient }} - {{ client.nomClient }}</strong>
-                      <span class="client-summary">({{ getTotalMissionsInClient(group, client) }} mission(s))</span>
+                      <span class="client-summary">
+                        <i class="fas fa-briefcase"></i> ({{ getTotalMissionsInClient(group, client) }} mission(s))
+                      </span>
                     </div>
                   </td>
                   
@@ -221,29 +226,29 @@ interface ModalData {
                     </div>
                   </td>
                   <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('LAB', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.lab)">
-                    <span class="status-icon" [class.completed]="mission.avantMission.lab">
-                      {{ mission.avantMission.lab ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.avantMission.lab ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.avantMission.lab"></i>
                   </td>
                   <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('Conflit Check', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.conflitCheck)">
-                    <span class="status-icon" [class.completed]="mission.avantMission.conflitCheck">
-                      {{ mission.avantMission.conflitCheck ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.avantMission.conflitCheck ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.avantMission.conflitCheck"></i>
                   </td>
                   <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('QAC', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.qac)">
-                    <span class="status-icon" [class.completed]="mission.avantMission.qac">
-                      {{ mission.avantMission.qac ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.avantMission.qac ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.avantMission.qac"></i>
                   </td>
                   <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('QAM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.qam)">
-                    <span class="status-icon" [class.completed]="mission.avantMission.qam">
-                      {{ mission.avantMission.qam ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.avantMission.qam ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.avantMission.qam"></i>
                   </td>
                   <td *ngIf="!avantMissionCollapsed" class="status-cell" (click)="openStatusModal('LDM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.avantMission.ldm)">
-                    <span class="status-icon" [class.completed]="mission.avantMission.ldm">
-                      {{ mission.avantMission.ldm ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.avantMission.ldm ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.avantMission.ldm"></i>
                   </td>
                   
                   <!-- Pendant la mission -->
@@ -253,24 +258,24 @@ interface ModalData {
                     </div>
                   </td>
                   <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('NOG', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.nog)">
-                    <span class="status-icon" [class.completed]="mission.pendantMission.nog">
-                      {{ mission.pendantMission.nog ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.pendantMission.nog ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.pendantMission.nog"></i>
                   </td>
                   <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Checklist', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.checklist)">
-                    <span class="status-icon" [class.completed]="mission.pendantMission.checklist">
-                      {{ mission.pendantMission.checklist ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.pendantMission.checklist ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.pendantMission.checklist"></i>
                   </td>
                   <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Révision', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.revision)">
-                    <span class="status-icon" [class.completed]="mission.pendantMission.revision">
-                      {{ mission.pendantMission.revision ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.pendantMission.revision ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.pendantMission.revision"></i>
                   </td>
                   <td *ngIf="!pendantMissionCollapsed" class="status-cell" (click)="openStatusModal('Supervision', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.pendantMission.supervision)">
-                    <span class="status-icon" [class.completed]="mission.pendantMission.supervision">
-                      {{ mission.pendantMission.supervision ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.pendantMission.supervision ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.pendantMission.supervision"></i>
                   </td>
                   
                   <!-- Fin de mission -->
@@ -280,24 +285,24 @@ interface ModalData {
                     </div>
                   </td>
                   <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('NDS/CR Mission', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.ndsCr)">
-                    <span class="status-icon" [class.completed]="mission.finMission.ndsCr">
-                      {{ mission.finMission.ndsCr ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.finMission.ndsCr ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.finMission.ndsCr"></i>
                   </td>
                   <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('QMM', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.qmm)">
-                    <span class="status-icon" [class.completed]="mission.finMission.qmm">
-                      {{ mission.finMission.qmm ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.finMission.qmm ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.finMission.qmm"></i>
                   </td>
                   <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('Plaquette', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.plaquette)">
-                    <span class="status-icon" [class.completed]="mission.finMission.plaquette">
-                      {{ mission.finMission.plaquette ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.finMission.plaquette ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.finMission.plaquette"></i>
                   </td>
                   <td *ngIf="!finMissionCollapsed" class="status-cell" (click)="openStatusModal('Restitution communication client', mission.numeroGroupe + '-' + mission.numeroClient + '-' + mission.mission, mission.finMission.restitution)">
-                    <span class="status-icon" [class.completed]="mission.finMission.restitution">
-                      {{ mission.finMission.restitution ? '✅' : '⏳' }}
-                    </span>
+                    <i class="fas status-icon" 
+                       [ngClass]="mission.finMission.restitution ? 'fa-check-circle' : 'fa-clock'"
+                       [class.completed]="mission.finMission.restitution"></i>
                   </td>
                 </tr>
               </ng-container>
@@ -317,7 +322,7 @@ interface ModalData {
               class="pagination-btn" 
               [disabled]="currentPage === 1"
               (click)="goToPage(currentPage - 1)">
-              ← Précédent
+              <i class="fas fa-chevron-left"></i> Précédent
             </button>
             
             <div class="page-numbers">
@@ -338,7 +343,7 @@ interface ModalData {
               class="pagination-btn" 
               [disabled]="currentPage === totalPages"
               (click)="goToPage(currentPage + 1)">
-              Suivant →
+              Suivant <i class="fas fa-chevron-right"></i>
             </button>
           </div>         
         </div>
@@ -349,7 +354,9 @@ interface ModalData {
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h3>{{ modalData.columnName }}</h3>
-            <button class="modal-close" (click)="closeModal()">×</button>
+            <button class="modal-close" (click)="closeModal()">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -370,7 +377,9 @@ interface ModalData {
                 class="file-input">
               <div *ngIf="modalData.selectedFile" class="file-info">
                 <span class="file-name">{{ modalData.selectedFile.name }}</span>
-                <button class="remove-file" (click)="removeFile()">×</button>
+                <button class="remove-file" (click)="removeFile()">
+                  <i class="fas fa-times"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -691,6 +700,15 @@ interface ModalData {
     .status-icon {
       font-size: 16px;
       display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .status-icon.completed {
+      color: var(--success-color);
+    }
+
+    .status-icon:not(.completed) {
+      color: var(--warning-color);
     }
 
     .collapse-btn {
