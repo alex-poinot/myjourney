@@ -1064,6 +1064,119 @@ export class DashboardComponent implements OnInit {
     this.updatePagination();
   }
 
+  private loadDemoData(): void {
+    // Données de démonstration pour le développement
+    const demoData: MissionData[] = [
+      {
+        numeroGroupe: 'G001',
+        nomGroupe: 'Groupe Alpha',
+        numeroClient: 'C001',
+        nomClient: 'Client Demo 1',
+        mission: 'Mission Test 1',
+        avantMission: {
+          percentage: 75,
+          lab: true,
+          conflitCheck: true,
+          qac: false,
+          qam: true,
+          ldm: false
+        },
+        pendantMission: {
+          percentage: 50,
+          nog: true,
+          checklist: false,
+          revision: true,
+          supervision: false
+        },
+        finMission: {
+          percentage: 25,
+          ndsCr: false,
+          qmm: false,
+          plaquette: true,
+          restitution: false
+        }
+      },
+      {
+        numeroGroupe: 'G001',
+        nomGroupe: 'Groupe Alpha',
+        numeroClient: 'C002',
+        nomClient: 'Client Demo 2',
+        mission: 'Mission Test 2',
+        avantMission: {
+          percentage: 100,
+          lab: true,
+          conflitCheck: true,
+          qac: true,
+          qam: true,
+          ldm: true
+        },
+        pendantMission: {
+          percentage: 75,
+          nog: true,
+          checklist: true,
+          revision: true,
+          supervision: false
+        },
+        finMission: {
+          percentage: 50,
+          ndsCr: true,
+          qmm: true,
+          plaquette: false,
+          restitution: false
+        }
+      }
+    ];
+
+    // Traiter les données de démonstration comme les vraies données
+    const groupedByGroupe = demoData.reduce((acc, mission) => {
+      const groupKey = mission.numeroGroupe;
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          numeroGroupe: mission.numeroGroupe,
+          nomGroupe: mission.nomGroupe,
+          missions: []
+        };
+      }
+      acc[groupKey].missions.push(mission);
+      return acc;
+    }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
+
+    this.groupedData = Object.values(groupedByGroupe).map(group => {
+      const clientGroups = group.missions.reduce((acc, mission) => {
+        const clientKey = mission.numeroClient;
+        if (!acc[clientKey]) {
+          acc[clientKey] = {
+            numeroClient: mission.numeroClient,
+            nomClient: mission.nomClient,
+            missions: [],
+            expanded: true
+          };
+        }
+        acc[clientKey].missions.push(mission);
+        return acc;
+      }, {} as { [key: string]: ClientGroup });
+
+      return {
+        numeroGroupe: group.numeroGroupe,
+        nomGroupe: group.nomGroupe,
+        clients: Object.values(clientGroups),
+        expanded: true
+      };
+    });
+
+    this.totalMissions = this.groupedData.reduce((total, group) => 
+      total + group.clients.reduce((clientTotal, client) => 
+        clientTotal + client.missions.length, 0), 0);
+    
+    this.completeGroupedData = JSON.parse(JSON.stringify(this.groupedData));
+    
+    this.allMissions = this.groupedData.flatMap(group => 
+      group.clients.flatMap(client => client.missions)
+    );
+    
+    this.updatePagination();
+  }
+
   initializeData(): void {
     // Récupérer les données des missions depuis l'API
     this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
@@ -1126,6 +1239,10 @@ export class DashboardComponent implements OnInit {
         this.updatePagination();
       }, (error) => {
         console.error('Erreur lors de la récupération des missions :', error);
+        
+        // Utiliser des données de démonstration si l'API n'est pas disponible
+        console.warn('Utilisation des données de démonstration car l\'API n\'est pas disponible');
+        this.loadDemoData();
       });
   }
 

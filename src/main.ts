@@ -2,6 +2,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
+import { APP_INITIALIZER } from '@angular/core';
 import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig } from './auth/auth.config';
@@ -12,6 +13,18 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
 
 export function MSALInstanceFactory(): PublicClientApplication {
   return new PublicClientApplication(msalConfig);
+}
+
+export function initializeMsal(msalService: MsalService): () => Promise<void> {
+  return () => {
+    return new Promise<void>((resolve) => {
+      msalService.instance.initialize().then(() => {
+        msalService.handleRedirectObservable().subscribe(() => {
+          resolve();
+        });
+      });
+    });
+  };
 }
 
 @Component({
@@ -79,6 +92,12 @@ bootstrapApplication(AppComponent, {
       useFactory: MSALInstanceFactory
     },
     MsalService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeMsal,
+      deps: [MsalService],
+      multi: true
+    },
     AuthService
   ]
 });
