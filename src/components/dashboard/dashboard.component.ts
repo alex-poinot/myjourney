@@ -1060,8 +1060,19 @@ export class DashboardComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.initializeData();
-    this.updatePagination();
+    this.loadData();
+  }
+
+  private loadData(): void {
+    // Récupérer les données des missions depuis l'API
+    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+      .subscribe((response) => {
+        this.processData(response.data);
+      }, (error) => {
+        console.error('Erreur lors de la récupération des missions :', error);
+        console.warn('Utilisation des données de démonstration car l\'API n\'est pas disponible');
+        this.loadDemoData();
+      });
   }
 
   private loadDemoData(): void {
@@ -1127,8 +1138,12 @@ export class DashboardComponent implements OnInit {
       }
     ];
 
-    // Traiter les données de démonstration comme les vraies données
-    const groupedByGroupe = demoData.reduce((acc, mission) => {
+    this.processData(demoData);
+  }
+
+  private processData(data: MissionData[]): void {
+    // Grouper d'abord par numeroGroupe, puis par numeroClient
+    const groupedByGroupe = data.reduce((acc, mission) => {
       const groupKey = mission.numeroGroupe;
       if (!acc[groupKey]) {
         acc[groupKey] = {
@@ -1141,7 +1156,9 @@ export class DashboardComponent implements OnInit {
       return acc;
     }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
 
+    // Créer la structure finale avec double groupement
     this.groupedData = Object.values(groupedByGroupe).map(group => {
+      // Grouper les missions par numeroClient
       const clientGroups = group.missions.reduce((acc, mission) => {
         const clientKey = mission.numeroClient;
         if (!acc[clientKey]) {
@@ -1168,8 +1185,10 @@ export class DashboardComponent implements OnInit {
       total + group.clients.reduce((clientTotal, client) => 
         clientTotal + client.missions.length, 0), 0);
     
+    // Sauvegarder les données complètes pour les compteurs
     this.completeGroupedData = JSON.parse(JSON.stringify(this.groupedData));
     
+    // Créer une liste plate de toutes les missions pour la pagination
     this.allMissions = this.groupedData.flatMap(group => 
       group.clients.flatMap(client => client.missions)
     );
@@ -1177,74 +1196,6 @@ export class DashboardComponent implements OnInit {
     this.updatePagination();
   }
 
-  initializeData(): void {
-    // Récupérer les données des missions depuis l'API
-    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
-      .subscribe((response) => {
-        let data = response.data;
-        
-        const realData: MissionData[] = data;
-
-        // Grouper d'abord par numeroGroupe, puis par numeroClient
-        const groupedByGroupe = realData.reduce((acc, mission) => {
-          const groupKey = mission.numeroGroupe;
-          if (!acc[groupKey]) {
-            acc[groupKey] = {
-              numeroGroupe: mission.numeroGroupe,
-              nomGroupe: mission.nomGroupe,
-              missions: []
-            };
-          }
-          acc[groupKey].missions.push(mission);
-          return acc;
-        }, {} as { [key: string]: { numeroGroupe: string; nomGroupe: string; missions: MissionData[] } });
-
-        // Créer la structure finale avec double groupement
-        this.groupedData = Object.values(groupedByGroupe).map(group => {
-          // Grouper les missions par numeroClient
-          const clientGroups = group.missions.reduce((acc, mission) => {
-            const clientKey = mission.numeroClient;
-            if (!acc[clientKey]) {
-              acc[clientKey] = {
-                numeroClient: mission.numeroClient,
-                nomClient: mission.nomClient,
-                missions: [],
-                expanded: true
-              };
-            }
-            acc[clientKey].missions.push(mission);
-            return acc;
-          }, {} as { [key: string]: ClientGroup });
-
-          return {
-            numeroGroupe: group.numeroGroupe,
-            nomGroupe: group.nomGroupe,
-            clients: Object.values(clientGroups),
-            expanded: true
-          };
-        });
-
-        this.totalMissions = this.groupedData.reduce((total, group) => 
-          total + group.clients.reduce((clientTotal, client) => 
-            clientTotal + client.missions.length, 0), 0);
-        
-        // Sauvegarder les données complètes pour les compteurs
-        this.completeGroupedData = JSON.parse(JSON.stringify(this.groupedData));
-        
-        // Créer une liste plate de toutes les missions pour la pagination
-        this.allMissions = this.groupedData.flatMap(group => 
-          group.clients.flatMap(client => client.missions)
-        );
-        
-        this.updatePagination();
-      }, (error) => {
-        console.error('Erreur lors de la récupération des missions :', error);
-        
-        // Utiliser des données de démonstration si l'API n'est pas disponible
-        console.warn('Utilisation des données de démonstration car l\'API n\'est pas disponible');
-        this.loadDemoData();
-      });
-  }
 
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.totalMissions / this.itemsPerPage);
