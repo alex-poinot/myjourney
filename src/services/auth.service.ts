@@ -71,7 +71,7 @@ export class AuthService {
 
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${tokenResponse.accessToken}`
-      }));
+      });
 
       // Récupérer les informations du profil
       const profile = await this.http.get<any>(graphConfig.graphMeEndpoint, { headers }).toPromise();
