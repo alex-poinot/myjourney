@@ -313,7 +313,7 @@ interface GroupData {
                 *ngIf="page !== '...' && page !== ''"
                 class="page-btn"
                 [class.active]="page === currentPage"
-                (click)="goToPage(page)">
+                (click)="goToPage(+page)">
                 {{ page }}
               </button>
               <div *ngIf="page === '...'" class="page-btn ellipsis">...</div>
@@ -1090,5 +1090,19 @@ export class DashboardComponent implements OnInit {
     }, 0);
     
     return Math.round(total / client.missions.length);
+  }
+
+  toggleColumnGroup(group: 'avantMission' | 'pendantMission' | 'finMission'): void {
+    switch (group) {
+      case 'avantMission':
+        this.avantMissionCollapsed = !this.avantMissionCollapsed;
+        break;
+      case 'pendantMission':
+        this.pendantMissionCollapsed = !this.pendantMissionCollapsed;
+        break;
+      case 'finMission':
+        this.finMissionCollapsed = !this.finMissionCollapsed;
+        break;
+    }
   }
 }
