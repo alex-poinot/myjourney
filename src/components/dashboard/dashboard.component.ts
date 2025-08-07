@@ -418,6 +418,7 @@ interface GroupData {
       display: flex;
       align-items: center;
       gap: 12px;
+      justify-content: center;
     }
 
     .pagination-btn {
@@ -753,7 +754,7 @@ export class DashboardComponent implements OnInit {
   allMissions: MissionData[] = [];
   completeGroupedData: GroupData[] = [];
   currentPage = 1;
-  itemsPerPage = 50;
+  itemsPerPage = 10;
   totalMissions = 0;
   totalPages = 0;
   startIndex = 0;
