@@ -24,13 +24,13 @@ import { NogEditorComponent } from './components/nog-editor/nog-editor.component
   `,
   styles: [`
     .app-container {
-      min-height: 100vh;
+      min-height: calc(100vh - 70px);
     }
     
     .main-content {
       margin-top: 70px;
       background: #f8fafc;
-      min-height: 100vh;
+      min-height: calc(100vh - 70px);
     }
     
     .coming-soon {
