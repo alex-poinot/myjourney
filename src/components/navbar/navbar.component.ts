@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AuthService, UserProfile } from '../../services/auth.service';
 
 export interface TabGroup {
   name: string;
@@ -51,8 +52,11 @@ export interface TabGroup {
 
       <!-- Profil utilisateur -->
       <div class="navbar-profile">
-        <img [src]="userPhoto" [alt]="userName" class="profile-photo">
-        <span class="profile-name">{{ userName }}</span>
+        <img [src]="currentUser?.photoUrl || defaultPhoto" [alt]="currentUser?.displayName || 'Utilisateur'" class="profile-photo">
+        <span class="profile-name">{{ currentUser?.displayName || 'Utilisateur' }}</span>
+        <button class="logout-btn" (click)="logout()" title="Se déconnecter">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
       </div>
     </nav>
   `,
@@ -218,6 +222,22 @@ export interface TabGroup {
       color: var(--gray-700);
       font-size: 14px;
     }
+    
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--gray-600);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
+    
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+    }
 
     /* Responsive */
     @media (max-width: 1024px) {
@@ -255,9 +275,10 @@ export interface TabGroup {
 })
 export class NavbarComponent {
   @Input() activeTab: string = 'dashboard';
-  @Input() userName: string = 'Jean Dupont';
-  @Input() userPhoto: string = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100';
   @Output() tabChange = new EventEmitter<string>();
+  
+  currentUser: UserProfile | null = null;
+  defaultPhoto = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100';
 
   tabGroups: TabGroup[] = [
     {
@@ -280,6 +301,12 @@ export class NavbarComponent {
     }
   ];
 
+  constructor(private authService: AuthService) {
+    this.authService.userProfile$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
   toggleGroup(group: TabGroup): void {
     group.collapsed = !group.collapsed;
   }
@@ -298,5 +325,11 @@ export class NavbarComponent {
 
   goToHome(): void {
     this.tabChange.emit('dashboard');
+  }
+  
+  logout(): void {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      this.authService.logout();
+    }
   }
 }

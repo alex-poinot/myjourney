@@ -62,4 +62,14 @@ export class AppComponent {
   }
 }
 
+bootstrapApplication(AppComponent, {
+  providers: [
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: MSALInstanceFactory
+    },
+    MsalService,
+    AuthService
+  ]
+});
 bootstrapApplication(AppComponent);
