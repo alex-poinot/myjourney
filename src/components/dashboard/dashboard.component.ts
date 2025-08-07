@@ -300,6 +300,10 @@ interface GroupData {
 
       <div class="pagination-footer">
         <div class="pagination-container">
+          <div class="mission-count-display">
+            {{ startIndex + 1 }}-{{ endIndex }} sur {{ totalMissions }} missions
+          </div>
+          
           <div class="pagination-controls">
             <button 
               class="pagination-btn" 
@@ -328,11 +332,7 @@ interface GroupData {
               (click)="goToPage(currentPage + 1)">
               Suivant →
             </button>
-          </div>
-          
-          <div class="mission-count-display">
-            {{ startIndex + 1 }}-{{ endIndex }} sur {{ totalMissions }} missions
-          </div>
+          </div>         
         </div>
       </div>
     </div>
@@ -790,7 +790,7 @@ export class DashboardComponent implements OnInit {
   allMissions: MissionData[] = [];
   completeGroupedData: GroupData[] = [];
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 180;
   totalMissions = 0;
   totalPages = 0;
   startIndex = 0;
