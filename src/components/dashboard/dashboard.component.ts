@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { AuthService, UserProfile } from '../../services/auth.service';
 
 interface MissionData {
   numeroGroupe: string;
@@ -1049,6 +1050,9 @@ export class DashboardComponent implements OnInit {
   startIndex = 0;
   endIndex = 0;
 
+  currentUser: UserProfile | null = null;
+  userEmail: string = '';
+
   public modalData: ModalData = {
     isOpen: false,
     columnName: '',
@@ -1057,9 +1061,19 @@ export class DashboardComponent implements OnInit {
     selectedFile: null
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    // Récupérer les informations utilisateur
+    this.authService.userProfile$.subscribe(user => {
+      this.currentUser = user;
+      this.userEmail = user?.mail || user?.userPrincipalName || '';
+      console.log('Email utilisateur dans dashboard:', this.userEmail);
+    });
+
     this.loadData();
   }
 
