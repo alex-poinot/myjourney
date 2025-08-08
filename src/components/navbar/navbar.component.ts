@@ -253,6 +253,10 @@ export interface TabGroup {
       .profile-name {
         display: none;
       }
+      
+      .profile-info {
+        display: none;
+      }
     }
 
     @media (max-width: 768px) {
