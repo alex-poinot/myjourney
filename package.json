@@ -4,7 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build"
+    "build": "ng build",
+    "build:staging": "ng build --configuration=staging",
+    "build:prod": "ng build --configuration=production",
+    "serve:staging": "ng serve --configuration=staging",
+    "serve:prod": "ng serve --configuration=production"
   },
   "dependencies": {
     "@angular/animations": "^20.0.0",

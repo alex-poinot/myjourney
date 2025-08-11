@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { AuthService, UserProfile } from '../../services/auth.service';
+import { environment } from '../../environments/environment';
 
 interface MissionData {
   numeroGroupe: string;
@@ -1079,13 +1080,15 @@ export class DashboardComponent implements OnInit {
 
   private loadData(): void {
     // Récupérer les données des missions depuis l'API
-    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>('http://localhost:3000/api/missions/getAllMissionsDashboard')
+    this.http.get<{ success: boolean; data: MissionData[]; count: number; timestamp: string }>(`${environment.apiUrl}/api/missions/getAllMissionsDashboard`)
       .subscribe((response) => {
         this.processData(response.data);
       }, (error) => {
         console.error('Erreur lors de la récupération des missions :', error);
-        console.warn('Utilisation des données de démonstration car l\'API n\'est pas disponible');
-        this.loadDemoData();
+        if (environment.features.enableMockData) {
+          console.warn('Utilisation des données de démonstration car l\'API n\'est pas disponible');
+          this.loadDemoData();
+        }
       });
   }
 
