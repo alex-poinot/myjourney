@@ -1071,8 +1071,14 @@ export class DashboardComponent implements OnInit {
     // Récupérer les informations utilisateur
     this.authService.userProfile$.subscribe(user => {
       this.currentUser = user;
-      this.userEmail = user?.mail || user?.userPrincipalName || '';
-      console.log('Email utilisateur dans dashboard:', this.userEmail);
+    });
+    
+    // Écouter les changements d'impersonation
+    this.authService.impersonatedEmail$.subscribe(() => {
+      this.userEmail = this.authService.getEffectiveUserEmail();
+      console.log('Email effectif dans dashboard:', this.userEmail);
+      // Recharger les données quand l'email change
+      this.loadData();
     });
 
     this.loadData();

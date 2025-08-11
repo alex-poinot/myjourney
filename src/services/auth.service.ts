@@ -14,6 +14,7 @@ export interface UserProfile {
   jobTitle?: string;
   department?: string;
   photoUrl?: string;
+  isAdmin?: boolean;
 }
 
 @Injectable({
@@ -26,6 +27,11 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+  private impersonatedEmailSubject = new BehaviorSubject<string | null>(null);
+  public impersonatedEmail$ = this.impersonatedEmailSubject.asObservable();
+
+  private originalUserSubject = new BehaviorSubject<UserProfile | null>(null);
+  public originalUser$ = this.originalUserSubject.asObservable();
   constructor(
     @Optional() private msalService: MsalService,
     private http: HttpClient
@@ -144,15 +150,57 @@ export class AuthService {
         userPrincipalName: profile.userPrincipalName,
         jobTitle: profile.jobTitle,
         department: profile.department,
-        photoUrl: photoUrl
+        photoUrl: photoUrl,
+        isAdmin: this.isAdminUser(profile.mail || profile.userPrincipalName)
       };
 
       this.userProfileSubject.next(userProfile);
+      // Sauvegarder l'utilisateur original
+      if (!this.originalUserSubject.value) {
+        this.originalUserSubject.next(userProfile);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
     }
   }
 
+  private isAdminUser(email: string): boolean {
+    const adminEmails = ['alexandre.poinot@fr.gt.com'];
+    return adminEmails.includes(email.toLowerCase());
+  }
+
+  // Méthodes d'impersonation
+  impersonateUser(email: string): void {
+    if (!this.isCurrentUserAdmin()) {
+      console.error('Seuls les administrateurs peuvent utiliser l\'impersonation');
+      return;
+    }
+    
+    this.impersonatedEmailSubject.next(email);
+  }
+
+  stopImpersonation(): void {
+    this.impersonatedEmailSubject.next(null);
+  }
+
+  isCurrentUserAdmin(): boolean {
+    const currentUser = this.userProfileSubject.value;
+    return currentUser?.isAdmin === true || currentUser?.mail === 'alexandre.poinot@fr.gt.com';
+  }
+
+  isImpersonating(): boolean {
+    return this.impersonatedEmailSubject.value !== null;
+  }
+
+  getEffectiveUserEmail(): string {
+    const impersonatedEmail = this.impersonatedEmailSubject.value;
+    if (impersonatedEmail) {
+      return impersonatedEmail;
+    }
+    
+    const currentUser = this.userProfileSubject.value;
+    return currentUser?.mail || currentUser?.userPrincipalName || '';
+  }
   getCurrentUser(): UserProfile | null {
     return this.userProfileSubject.value;
   }

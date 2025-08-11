@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService, UserProfile } from '../../services/auth.service';
 
 export interface TabGroup {
@@ -13,7 +14,7 @@ export interface TabGroup {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <nav class="navbar-horizontal">
       <!-- Logo et titre -->
@@ -52,13 +53,68 @@ export interface TabGroup {
 
       <!-- Profil utilisateur -->
       <div class="navbar-profile">
+        <!-- Badge d'impersonation -->
+        <div *ngIf="isImpersonating" class="impersonation-badge">
+          <i class="fas fa-user-secret"></i>
+          <span>{{ impersonatedEmail }}</span>
+          <button class="stop-impersonation-btn" (click)="stopImpersonation()" title="Reprendre mon profil">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
         <img [src]="currentUser?.photoUrl || defaultPhoto" [alt]="currentUser?.displayName || 'Utilisateur'" class="profile-photo">
-        <span class="profile-name">{{ currentUser?.displayName || 'Utilisateur' }}</span>
+        <div class="profile-info">
+          <span class="profile-name">{{ currentUser?.displayName || 'Utilisateur' }}</span>
+          <span class="profile-email">{{ isImpersonating ? impersonatedEmail : (currentUser?.mail || '') }}</span>
+        </div>
+        
+        <!-- Bouton d'impersonation pour les admins -->
+        <button *ngIf="isAdmin() && !isImpersonating" 
+                class="impersonation-btn" 
+                (click)="openImpersonationModal()" 
+                title="Prendre le profil d'un autre utilisateur">
+          <i class="fas fa-user-secret"></i>
+        </button>
+        
         <button class="logout-btn" (click)="logout()" title="Se déconnecter">
           <i class="fas fa-sign-out-alt"></i>
         </button>
       </div>
     </nav>
+    
+    <!-- Modal d'impersonation -->
+    <div *ngIf="showImpersonationModal" class="modal-overlay" (click)="closeImpersonationModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Prendre le profil d'un utilisateur</h3>
+          <button class="modal-close" (click)="closeImpersonationModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="email-input">Adresse email de l'utilisateur :</label>
+            <input 
+              type="email" 
+              id="email-input"
+              [(ngModel)]="impersonationEmailInput"
+              placeholder="utilisateur@exemple.com"
+              class="email-input"
+              (keyup.enter)="startImpersonation()">
+          </div>
+          <div class="warning-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Cette fonctionnalité est réservée aux administrateurs. Toutes les données affichées correspondront à l'utilisateur sélectionné.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeImpersonationModal()">Annuler</button>
+          <button class="btn-confirm" (click)="startImpersonation()" [disabled]="!impersonationEmailInput.trim()">
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .navbar-horizontal {
@@ -217,10 +273,70 @@ export interface TabGroup {
       object-fit: cover;
     }
 
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
     .profile-name {
       font-weight: 500;
       color: var(--gray-700);
       font-size: 14px;
+      line-height: 1.2;
+    }
+    
+    .profile-email {
+      font-size: 12px;
+      color: var(--gray-500);
+      line-height: 1.2;
+    }
+    
+    .impersonation-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--warning-color);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 12px;
+    }
+    
+    .stop-impersonation-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    
+    .stop-impersonation-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .impersonation-btn {
+      background: var(--secondary-color);
+      border: none;
+      color: white;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
+    
+    .impersonation-btn:hover {
+      background: var(--primary-color);
     }
     
     .logout-btn {
@@ -239,6 +355,159 @@ export interface TabGroup {
       color: var(--error-color);
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow-xl);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-200);
+      background: var(--secondary-color);
+      color: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+
+    .email-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .email-input:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(100, 206, 199, 0.1);
+    }
+
+    .warning-message {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid var(--warning-color);
+      border-radius: 8px;
+      color: var(--warning-color);
+      font-size: 14px;
+    }
+
+    .warning-message i {
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .btn-cancel {
+      padding: 10px 20px;
+      border: 1px solid var(--gray-300);
+      background: white;
+      color: var(--gray-700);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-400);
+    }
+
+    .btn-confirm {
+      padding: 10px 20px;
+      border: none;
+      background: var(--secondary-color);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-confirm:hover:not(:disabled) {
+      background: var(--primary-color);
+    }
+
+    .btn-confirm:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
     /* Responsive */
     @media (max-width: 1024px) {
       .navbar-horizontal {
@@ -250,11 +519,11 @@ export interface TabGroup {
         display: none;
       }
       
-      .profile-name {
+      .profile-info {
         display: none;
       }
       
-      .profile-info {
+      .impersonation-badge {
         display: none;
       }
     }
@@ -282,6 +551,11 @@ export class NavbarComponent {
   @Output() tabChange = new EventEmitter<string>();
   
   currentUser: UserProfile | null = null;
+  originalUser: UserProfile | null = null;
+  impersonatedEmail: string | null = null;
+  showImpersonationModal = false;
+  impersonationEmailInput = '';
+  isImpersonating = false;
   defaultPhoto = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100';
 
   tabGroups: TabGroup[] = [
@@ -313,6 +587,15 @@ export class NavbarComponent {
         this.loadUserPhoto();
       }
     });
+    
+    this.authService.originalUser$.subscribe(user => {
+      this.originalUser = user;
+    });
+    
+    this.authService.impersonatedEmail$.subscribe(email => {
+      this.impersonatedEmail = email;
+      this.isImpersonating = email !== null;
+    });
   }
 
   private async loadUserPhoto(): Promise<void> {
@@ -338,6 +621,31 @@ export class NavbarComponent {
 
   goToHome(): void {
     this.tabChange.emit('dashboard');
+  }
+  
+  isAdmin(): boolean {
+    return this.authService.isCurrentUserAdmin();
+  }
+  
+  openImpersonationModal(): void {
+    this.showImpersonationModal = true;
+    this.impersonationEmailInput = '';
+  }
+  
+  closeImpersonationModal(): void {
+    this.showImpersonationModal = false;
+    this.impersonationEmailInput = '';
+  }
+  
+  startImpersonation(): void {
+    if (this.impersonationEmailInput.trim()) {
+      this.authService.impersonateUser(this.impersonationEmailInput.trim());
+      this.closeImpersonationModal();
+    }
+  }
+  
+  stopImpersonation(): void {
+    this.authService.stopImpersonation();
   }
   
   logout(): void {
