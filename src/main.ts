@@ -11,6 +11,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NogEditorComponent } from './components/nog-editor/nog-editor.component';
 import { LoginComponent } from './components/login/login.component';
+import { environment } from './environments/environment';
 
 export function MSALInstanceFactory(): PublicClientApplication {
   return new PublicClientApplication(msalConfig);
@@ -19,11 +20,16 @@ export function MSALInstanceFactory(): PublicClientApplication {
 export function initializeMsal(msalService: MsalService): () => Promise<void> {
   return () => {
     return new Promise<void>((resolve) => {
-      msalService.instance.initialize().then(() => {
-        msalService.handleRedirectObservable().subscribe(() => {
-          resolve();
+      if (environment.features.skipAuthentication) {
+        // Mode Bolt : pas d'initialisation MSAL
+        resolve();
+      } else {
+        msalService.instance.initialize().then(() => {
+          msalService.handleRedirectObservable().subscribe(() => {
+            resolve();
+          });
         });
-      });
+      }
     });
   };
 }
@@ -34,10 +40,10 @@ export function initializeMsal(msalService: MsalService): () => Promise<void> {
   imports: [CommonModule, NavbarComponent, DashboardComponent, NogEditorComponent, LoginComponent],
   template: `
     <!-- Page de connexion si non authentifié -->
-    <app-login *ngIf="!isAuthenticated"></app-login>
+    <app-login *ngIf="!isAuthenticated && !isBoltMode"></app-login>
     
     <!-- Application principale si authentifié -->
-    <div class="app-container" *ngIf="isAuthenticated">
+    <div class="app-container" *ngIf="isAuthenticated || isBoltMode">
       <app-navbar 
         [activeTab]="currentTab"
         (tabChange)="onTabSelected($event)">
@@ -87,12 +93,18 @@ export function initializeMsal(msalService: MsalService): () => Promise<void> {
 export class AppComponent {
   currentTab = 'dashboard';
   isAuthenticated = false;
+  isBoltMode = environment.features.skipAuthentication;
 
   constructor(private authService: AuthService) {
-    // Écouter les changements d'état d'authentification
-    this.authService.isAuthenticated$.subscribe(authenticated => {
-      this.isAuthenticated = authenticated;
-    });
+    if (this.isBoltMode) {
+      // Mode Bolt : toujours authentifié
+      this.isAuthenticated = true;
+    } else {
+      // Mode normal : écouter les changements d'état d'authentification
+      this.authService.isAuthenticated$.subscribe(authenticated => {
+        this.isAuthenticated = authenticated;
+      });
+    }
   }
 
   onTabSelected(tab: string) {
@@ -103,18 +115,20 @@ export class AppComponent {
 bootstrapApplication(AppComponent, {
   providers: [
     provideHttpClient(),
-    {
-      provide: MSAL_INSTANCE,
-      useFactory: MSALInstanceFactory
-    },
-    MsalService,
-    MsalBroadcastService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeMsal,
-      deps: [MsalService],
-      multi: true
-    },
+    ...(environment.features.skipAuthentication ? [] : [
+      {
+        provide: MSAL_INSTANCE,
+        useFactory: MSALInstanceFactory
+      },
+      MsalService,
+      MsalBroadcastService,
+      {
+        provide: APP_INITIALIZER,
+        useFactory: initializeMsal,
+        deps: [MsalService],
+        multi: true
+      }
+    ]),
     AuthService
   ]
 });

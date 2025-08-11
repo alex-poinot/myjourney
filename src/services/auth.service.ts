@@ -4,6 +4,7 @@ import { AuthenticationResult, AccountInfo } from '@azure/msal-browser';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { loginRequest, graphConfig } from '../auth/auth.config';
+import { environment } from '../environments/environment';
 
 export interface UserProfile {
   displayName: string;
@@ -28,7 +29,27 @@ export class AuthService {
     private msalService: MsalService,
     private http: HttpClient
   ) {
-    this.checkAuthenticationStatus();
+    if (environment.features.skipAuthentication) {
+      // Mode Bolt : simuler un utilisateur connecté
+      this.simulateBoltUser();
+    } else {
+      this.checkAuthenticationStatus();
+    }
+  }
+
+  private simulateBoltUser(): void {
+    // Simuler un utilisateur pour Bolt
+    const mockUser: UserProfile = {
+      displayName: 'Utilisateur Bolt',
+      mail: 'bolt.user@demo.com',
+      userPrincipalName: 'bolt.user@demo.com',
+      jobTitle: 'Développeur',
+      department: 'IT',
+      photoUrl: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100'
+    };
+    
+    this.isAuthenticatedSubject.next(true);
+    this.userProfileSubject.next(mockUser);
   }
 
   private checkAuthenticationStatus(): void {
@@ -44,6 +65,11 @@ export class AuthService {
   }
 
   async login(): Promise<void> {
+    if (environment.features.skipAuthentication) {
+      // Mode Bolt : déjà connecté
+      return;
+    }
+    
     try {
       const result = await firstValueFrom(this.msalService.loginPopup(loginRequest));
       if (result) {
@@ -58,12 +84,19 @@ export class AuthService {
   }
 
   logout(): void {
-    this.msalService.logout();
+    if (!environment.features.skipAuthentication) {
+      this.msalService.logout();
+    }
     this.isAuthenticatedSubject.next(false);
     this.userProfileSubject.next(null);
   }
 
   private async loadUserProfile(): Promise<void> {
+    if (environment.features.skipAuthentication) {
+      // Mode Bolt : profil déjà chargé
+      return;
+    }
+    
     try {
       const account = this.msalService.instance.getActiveAccount();
       if (!account) return;

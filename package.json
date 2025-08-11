@@ -7,8 +7,10 @@
     "build": "ng build",
     "build:staging": "ng build --configuration=staging",
     "build:prod": "ng build --configuration=production",
+    "build:bolt": "ng build --configuration=bolt",
     "serve:staging": "ng serve --configuration=staging",
-    "serve:prod": "ng serve --configuration=production"
+    "serve:prod": "ng serve --configuration=production",
+    "serve:bolt": "ng serve --configuration=bolt"
   },
   "dependencies": {
     "@angular/animations": "^20.0.0",
