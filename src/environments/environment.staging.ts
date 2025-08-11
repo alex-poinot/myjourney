@@ -12,6 +12,7 @@ export const environment = {
   features: {
     enableLogging: true,
     enableDebugMode: false,
-    enableMockData: false
+    enableMockData: false,
+    skipAuthentication: false
   }
 };
