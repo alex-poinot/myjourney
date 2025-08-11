@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Optional } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 import { AuthenticationResult, AccountInfo } from '@azure/msal-browser';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
@@ -26,7 +27,7 @@ export class AuthService {
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(
-    private msalService: MsalService,
+    @Optional() private msalService: MsalService,
     private http: HttpClient
   ) {
     if (environment.features.skipAuthentication) {
@@ -53,6 +54,8 @@ export class AuthService {
   }
 
   private checkAuthenticationStatus(): void {
+    if (!this.msalService) return;
+    
     const accounts = this.msalService.instance.getAllAccounts();
     if (accounts.length > 0) {
       this.msalService.instance.setActiveAccount(accounts[0]);
@@ -71,6 +74,10 @@ export class AuthService {
     }
     
     try {
+      if (!this.msalService) {
+        throw new Error('MSAL Service not available');
+      }
+      
       const result = await firstValueFrom(this.msalService.loginPopup(loginRequest));
       if (result) {
         this.msalService.instance.setActiveAccount(result.account);
@@ -84,7 +91,7 @@ export class AuthService {
   }
 
   logout(): void {
-    if (!environment.features.skipAuthentication) {
+    if (!environment.features.skipAuthentication && this.msalService) {
       this.msalService.logout();
     }
     this.isAuthenticatedSubject.next(false);
@@ -98,6 +105,8 @@ export class AuthService {
     }
     
     try {
+      if (!this.msalService) return;
+      
       const account = this.msalService.instance.getActiveAccount();
       if (!account) return;
 
